@@ -1,6 +1,6 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import { RotationDatastore } from "../datastores/rotation.ts";
-import { formatSchedule } from "./create_rotation.ts";
+import { formatSchedule } from "./open_rotation_form.ts";
 import { SlackAPIClient } from "deno-slack-sdk/deps.ts";
 import { DatastoreItem } from "deno-slack-api/types.ts";
 
@@ -60,7 +60,7 @@ export default SlackFunction(
   async ({ inputs, client }) => {
     const rotations: DatastoreItem<typeof RotationDatastore.definition>[] = [];
 
-    let cursor;
+    let cursor: string | undefined;
     do {
       const response = await client.apps.datastore.query<
         typeof RotationDatastore.definition
@@ -70,6 +70,7 @@ export default SlackFunction(
         expression_attributes: { "#channel": "channel" },
         expression_values: { ":channel": inputs.channel },
         limit: 1000,
+        cursor,
       });
 
       if (!response.ok) {
@@ -78,7 +79,7 @@ export default SlackFunction(
         };
       }
 
-      rotations.concat(response.items);
+      rotations.push(...response.items);
 
       cursor = response.response_metadata?.next_cursor;
     } while (cursor);
@@ -100,7 +101,9 @@ export default SlackFunction(
               rotation.roster.map((member: string) => `<@${member}>`).join(
                 ", ",
               )
-            }\n*Next up:* <@${rotation.current_queue[0] ?? rotation.roster[0]}>`,
+            }\n*Next up:* <@${
+              rotation.current_queue?.[0] ?? rotation.roster[0]
+            }>`,
         },
       };
 
@@ -108,12 +111,24 @@ export default SlackFunction(
         "type": "actions",
         "elements": [
           {
-            "type": "button",
+            "type": "workflow_button",
             "text": {
               "type": "plain_text",
               "text": "Edit",
             },
             "action_id": `edit_rotation-${rotation.trigger_id}`,
+            "workflow": {
+              "trigger": {
+                "url":
+                  "https://slack.com/shortcuts/Ft068EGKG6JG/996a9ebe87ac264367856f92ec06dcf9",
+                "customizable_input_parameters": [
+                  {
+                    "name": "trigger_id",
+                    "value": rotation.trigger_id,
+                  },
+                ],
+              },
+            },
           },
           {
             "type": "button",

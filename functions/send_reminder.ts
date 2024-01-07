@@ -42,7 +42,7 @@ export default SlackFunction(
             "type": "mrkdwn",
             "text": `It’s <@${
               rotation.current_queue[0]
-            }>’s turn to be ${rotation.name.toLowerCase()}.`,
+            }>’s turn to be \`${rotation.name}\`.`,
           },
         },
         {

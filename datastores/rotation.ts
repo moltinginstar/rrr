@@ -76,7 +76,7 @@ export const RotationDatastore = DefineDatastore({
     },
     current_queue: {
       type: Schema.types.array,
-      required: true,
+      required: false,
       items: {
         type: Schema.slack.types.user_id,
       },

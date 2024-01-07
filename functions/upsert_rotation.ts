@@ -194,7 +194,6 @@ export default SlackFunction(
         channel: inputs.channel,
         name: inputs.name,
         roster: inputs.roster,
-        current_queue: [],
         frequency: inputs.frequency,
         time: inputs.time,
         repeats_every: inputs.repeats_every,

@@ -1,5 +1,5 @@
 import { DefineWorkflow, Schema } from "deno-slack-sdk/mod.ts";
-import { CreateRotationFunction } from "../functions/create_rotation.ts";
+import { OpenRotationFormFunction } from "../functions/open_rotation_form.ts";
 import { UpsertRotationFunction } from "../functions/upsert_rotation.ts";
 
 export const CreateRotationWorkflow = DefineWorkflow({
@@ -18,8 +18,8 @@ export const CreateRotationWorkflow = DefineWorkflow({
   },
 });
 
-const CreateRotationForm = CreateRotationWorkflow.addStep(
-  CreateRotationFunction,
+const RotationForm = CreateRotationWorkflow.addStep(
+  OpenRotationFormFunction,
   {
     interactivity: CreateRotationWorkflow.inputs.interactivity,
     channel: CreateRotationWorkflow.inputs.channel,
@@ -29,23 +29,23 @@ const CreateRotationForm = CreateRotationWorkflow.addStep(
 CreateRotationWorkflow.addStep(
   UpsertRotationFunction,
   {
-    name: CreateRotationForm.outputs.name,
-    channel: CreateRotationForm.outputs.channel,
-    roster: CreateRotationForm.outputs.roster,
-    time: CreateRotationForm.outputs.time,
-    frequency: CreateRotationForm.outputs.frequency,
-    repeats_every: CreateRotationForm.outputs.repeats_every,
-    on_days: CreateRotationForm.outputs.on_days,
+    name: RotationForm.outputs.name,
+    channel: RotationForm.outputs.channel,
+    roster: RotationForm.outputs.roster,
+    time: RotationForm.outputs.time,
+    frequency: RotationForm.outputs.frequency,
+    repeats_every: RotationForm.outputs.repeats_every,
+    on_days: RotationForm.outputs.on_days,
   },
 );
 
 CreateRotationWorkflow.addStep(
   Schema.slack.functions.SendEphemeralMessage,
   {
-    channel_id: CreateRotationForm.outputs.channel,
+    channel_id: RotationForm.outputs.channel,
     user_id: CreateRotationWorkflow.inputs.interactivity.interactor.id,
     message:
-      `The rotation \`${CreateRotationForm.outputs.name}\` was successfully created! :white_check_mark:`,
+      `The rotation \`${RotationForm.outputs.name}\` was successfully created! :white_check_mark:`,
   },
 );
 

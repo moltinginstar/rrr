@@ -53,7 +53,7 @@ export const formatSchedule = (schedule: Schedule) => {
 export const buildRotationForm = (
   // deno-lint-ignore no-explicit-any
   inputs: Record<string, any>,
-  schedule: Schedule,
+  schedule: Schedule = defaultSchedule,
 ) => {
   const scheduleSummary = formatSchedule(schedule);
 
@@ -72,7 +72,7 @@ export const buildRotationForm = (
     },
     "submit": {
       "type": "plain_text",
-      "text": "Create",
+      "text": "Save",
     },
     "blocks": [
       {
@@ -329,10 +329,10 @@ export const buildScheduleForm = (schedule: Schedule = defaultSchedule) => {
   };
 };
 
-export const CreateRotationFunction = DefineFunction({
-  title: "Create a rotation",
-  callback_id: "create_rotation_function",
-  source_file: "functions/create_rotation.ts",
+export const OpenRotationFormFunction = DefineFunction({
+  title: "Create or edit a rotation",
+  callback_id: "open_rotation_form_function",
+  source_file: "functions/open_rotation_form.ts",
   input_parameters: {
     properties: {
       interactivity: {
@@ -342,6 +342,16 @@ export const CreateRotationFunction = DefineFunction({
         type: Schema.slack.types.channel_id,
         description: "The ID of the channel to create a schedule for",
       },
+      name: {
+        type: Schema.types.string,
+      },
+      roster: {
+        type: Schema.types.array,
+        items: {
+          type: Schema.slack.types.user_id,
+        },
+      },
+      ...RotationScheduleType.definition.properties,
     },
     required: ["interactivity", "channel"],
   },
@@ -371,11 +381,20 @@ export const CreateRotationFunction = DefineFunction({
 });
 
 export default SlackFunction(
-  CreateRotationFunction,
+  OpenRotationFormFunction,
   async ({ inputs, client }) => {
+    const schedule = inputs.frequency && inputs.time && inputs.repeats_every
+      ? {
+        frequency: inputs.frequency,
+        time: inputs.time,
+        repeats_every: inputs.repeats_every,
+        on_days: inputs.on_days,
+      }
+      : undefined;
+
     await client.views.open({
       interactivity_pointer: inputs.interactivity.interactivity_pointer,
-      view: buildRotationForm(inputs, defaultSchedule),
+      view: buildRotationForm(inputs, schedule as Schedule),
     });
 
     return {
