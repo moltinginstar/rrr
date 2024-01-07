@@ -6,6 +6,9 @@ import { formatSchedule } from "./open_rotation_form.ts";
 import { deleteRotation } from "./delete_rotations.ts";
 import { CreateRotationWorkflow } from "../workflows/create_rotation.ts";
 
+export const updateReminderTriggerUrl =
+  "https://slack.com/shortcuts/Ft068EGKG6JG/996a9ebe87ac264367856f92ec06dcf9";
+
 export const listRotations = async (
   inputs: { channel: string },
   client: SlackAPIClient,
@@ -93,7 +96,7 @@ export default SlackFunction(
           type: "actions",
           elements: [
             {
-              type: "workflow_button",
+              type: "workflow_button", // Note: "Workflow buttons are only supported in messages and message attachments, and not on views"
               text: {
                 type: "plain_text",
                 text: "Edit",
@@ -101,7 +104,7 @@ export default SlackFunction(
               action_id: `edit_rotation-${rotation.trigger_id}`,
               workflow: {
                 trigger: {
-                  url: "https://slack.com/shortcuts/Ft068EGKG6JG/996a9ebe87ac264367856f92ec06dcf9",
+                  url: updateReminderTriggerUrl,
                   customizable_input_parameters: [
                     {
                       name: "trigger_id",
