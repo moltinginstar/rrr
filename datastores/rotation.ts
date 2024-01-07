@@ -101,5 +101,12 @@ export const RotationDatastore = DefineDatastore({
         enum: daysOfWeek,
       },
     },
+    trigger_ids: {
+      type: Schema.types.array,
+      required: false,
+      items: {
+        type: Schema.types.string,
+      },
+    },
   },
 });

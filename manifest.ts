@@ -10,14 +10,16 @@ import { CreateRotationWorkflow } from "./workflows/create_rotation.ts";
 import { UpdateRotationWorkflow } from "./workflows/update_rotation.ts";
 import { ListRotationsWorkflow } from "./workflows/list_rotations.ts";
 import { SendReminderWorkflow } from "./workflows/send_reminder.ts";
+import { RemoveUserFromRotationWorkflow } from "./workflows/remove_user_from_rotation.ts";
 
 import { OpenRotationFormFunction } from "./functions/open_rotation_form.ts";
 import { CreateRotationFunction } from "./functions/create_rotation.ts";
 import { UpdateRotationFunction } from "./functions/update_rotation.ts";
-import { SendReminderFunction } from "./functions/send_reminder.ts";
 import { GetRotationFunction } from "./functions/get_rotation.ts";
 import { ListRotationsFunction } from "./functions/list_rotations.ts";
 import { RotateFunction } from "./functions/rotate.ts";
+import { SendReminderFunction } from "./functions/send_reminder.ts";
+import { RemoveUserFromRotationFunction } from "./functions/remove_user_from_rotation.ts";
 
 export default Manifest({
   name: "rrr",
@@ -32,16 +34,18 @@ export default Manifest({
     OpenRotationFormFunction,
     CreateRotationFunction,
     UpdateRotationFunction,
-    SendReminderFunction,
-    RotateFunction,
     GetRotationFunction,
     ListRotationsFunction,
+    RotateFunction,
+    SendReminderFunction,
+    RemoveUserFromRotationFunction,
   ],
   workflows: [
     CreateRotationWorkflow,
     UpdateRotationWorkflow,
     ListRotationsWorkflow,
     SendReminderWorkflow,
+    RemoveUserFromRotationWorkflow,
   ],
   outgoingDomains: [],
   botScopes: [

@@ -1,12 +1,8 @@
-import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-import { TriggerTypes } from "deno-slack-api/mod.ts";
 import { SendReminderWorkflow } from "../workflows/send_reminder.ts";
 import {
   DayOfWeek,
   daysOfWeek,
   Frequency,
-  RotationDatastore,
-  RotationScheduleType,
   Schedule,
 } from "../datastores/rotation.ts";
 import { ScheduledTrigger } from "deno-slack-api/typed-method-types/workflows/triggers/scheduled.ts";

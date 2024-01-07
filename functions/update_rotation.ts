@@ -11,7 +11,7 @@ import { computeStartTime, getTriggerFrequency } from "./upsert_rotation.ts";
 
 export const UpdateRotationFunction = DefineFunction({
   title: "Update a scheduled trigger",
-  callback_id: "update_rotation",
+  callback_id: "update_rotation_function",
   source_file: "functions/update_rotation.ts",
   input_parameters: {
     properties: {
@@ -119,7 +119,7 @@ export default SlackFunction(
         channel: inputs.channel,
         name: inputs.name,
         roster: inputs.roster,
-        current_queue: getResponse.item.current_queue.filter(roster.has),
+        current_queue: getResponse.item.current_queue?.filter(roster.has),
         frequency: inputs.frequency,
         time: inputs.time,
         repeats_every: inputs.repeats_every,

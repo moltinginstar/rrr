@@ -18,6 +18,31 @@ const deleteRotation = async (
     };
   }
 
+  const getResponse = await client.apps.datastore.get<
+    typeof RotationDatastore.definition
+  >({
+    datastore: RotationDatastore.name,
+    id: inputs.trigger_id,
+  });
+
+  if (!getResponse.ok) {
+    return {
+      error: `Failed to get rotation: ${JSON.stringify(getResponse)}.`,
+    };
+  }
+
+  const responses = await Promise.all(
+    getResponse.item.trigger_ids?.map((triggerId: string) => {
+      client.workflows.triggers.delete({ trigger_id: triggerId });
+    }) ?? [],
+  );
+
+  if (responses.some((response) => !response?.ok)) {
+    return {
+      error: `Triggers could not be deleted: ${JSON.stringify(responses)}.`,
+    };
+  }
+
   const datastoreResponse = await client.apps.datastore.delete<
     typeof RotationDatastore.definition
   >({

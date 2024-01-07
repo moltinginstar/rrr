@@ -8,10 +8,11 @@ import {
   RotationScheduleType,
 } from "../datastores/rotation.ts";
 import { computeStartTime, getTriggerFrequency } from "./upsert_rotation.ts";
+import RemoveUserFromRotationWorkflow from "../workflows/remove_user_from_rotation.ts";
 
 export const CreateRotationFunction = DefineFunction({
   title: "Create a scheduled trigger",
-  callback_id: "create_rotation",
+  callback_id: "create_rotation_function",
   source_file: "functions/create_rotation.ts",
   input_parameters: {
     properties: {
@@ -119,44 +120,32 @@ export default SlackFunction(
       };
     }
 
-    // const triggerResponse = await client.workflows.triggers.update<
-    //   typeof RemoveUserFromRotationWorkflow.definition
-    // >({
-    //   type: TriggerTypes.Event,
-    //   name: "Update roster when user leaves channel",
-    //   workflow:
-    //     `#/workflows/${RemoveUserFromRotationWorkflow.definition.callback_id}`,
-    //   event: {
-    //     event_type: TriggerEventTypes.UserLeftChannel,
-    //     channel_ids: [inputs.channel],
-    //   },
-    //   inputs: {
-    //     trigger_id: {
-    //       value: triggerId,
-    //     },
-    //     name: {
-    //       value: inputs.name,
-    //     },
-    //     channel: {
-    //       value: inputs.channel,
-    //     },
-    //     roster: {
-    //       value: inputs.roster,
-    //     },
-    //     time: {
-    //       value: inputs.time,
-    //     },
-    //     frequency: {
-    //       value: inputs.frequency,
-    //     },
-    //     repeats_every: {
-    //       value: inputs.repeats_every,
-    //     },
-    //     on_days: {
-    //       value: inputs.on_days,
-    //     },
-    //   },
-    // });
+    const triggerResponse = await client.workflows.triggers.create<
+      typeof RemoveUserFromRotationWorkflow.definition
+    >({
+      type: TriggerTypes.Event,
+      name: "Update roster when user leaves channel",
+      workflow:
+        `#/workflows/${RemoveUserFromRotationWorkflow.definition.callback_id}`,
+      event: {
+        event_type: TriggerEventTypes.UserLeftChannel,
+        channel_ids: [inputs.channel],
+      },
+      inputs: {
+        trigger_id: {
+          value: triggerId,
+        },
+        user_id: {
+          value: "{{data.user_id}}",
+        },
+      },
+    });
+
+    if (!triggerResponse.ok) {
+      return {
+        error: `Failed to create trigger: ${JSON.stringify(triggerResponse)}.`,
+      };
+    }
 
     const response = await client.apps.datastore.put<
       typeof RotationDatastore.definition
@@ -171,6 +160,7 @@ export default SlackFunction(
         time: inputs.time,
         repeats_every: inputs.repeats_every,
         on_days: inputs.on_days,
+        trigger_ids: [triggerResponse.trigger.id],
       },
     });
 
