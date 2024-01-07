@@ -108,5 +108,17 @@ export const RotationDatastore = DefineDatastore({
         type: Schema.types.string,
       },
     },
+    last_channel: {
+      type: Schema.slack.types.channel_id,
+      required: false,
+    },
+    last_message_ts: {
+      type: Schema.slack.types.message_ts,
+      required: false,
+    },
+    last_message: {
+      type: Schema.types.string,
+      required: false,
+    },
   },
 });

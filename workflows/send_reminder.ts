@@ -13,7 +13,11 @@ export const SendReminderWorkflow = DefineWorkflow({
       mode: {
         type: Schema.types.string,
         enum: ["skip", "postpone"],
-      }
+      },
+      replace_last: {
+        type: Schema.types.string,
+        default: "false",
+      },
     },
     required: ["trigger_id", "mode"],
   },
@@ -31,6 +35,7 @@ SendReminderWorkflow.addStep(
   SendReminderFunction,
   {
     trigger_id: SendReminderWorkflow.inputs.trigger_id,
+    replace_last: SendReminderWorkflow.inputs.replace_last === "true",
   },
 );
 

@@ -1,8 +1,25 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
+import type { DatastoreItem } from "deno-slack-api/types.ts";
 import { RotationDatastore } from "../datastores/rotation.ts";
 
 export const sendReminderTriggerUrl =
-  "https://slack.com/shortcuts/Ft067NEMFMDG/6c580202e159ba1c664bc213bb6c339b";
+  "https://slack.com/shortcuts/Ft06C9LF4VJ7/866bbe20949ff3208721dae7949ba7eb";
+
+const buildReminderContent = (
+  rotation: DatastoreItem<typeof RotationDatastore.definition>,
+) => {
+  return [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": `It’s <@${
+          rotation.current_queue[0]
+        }>’s turn to be \`${rotation.name}\`.`,
+      },
+    },
+  ];
+};
 
 export const SendReminderFunction = DefineFunction({
   callback_id: "send_reminder_function",
@@ -12,6 +29,10 @@ export const SendReminderFunction = DefineFunction({
     properties: {
       trigger_id: {
         type: Schema.types.string,
+      },
+      replace_last: {
+        type: Schema.types.boolean,
+        default: false,
       },
     },
     required: ["trigger_id"],
@@ -33,18 +54,11 @@ export default SlackFunction(
       return { error: `Failed to fetch rotation: ${rotationsResponse.error}.` };
     }
 
+    const content = buildReminderContent(rotation);
     const message = await client.chat.postMessage({
       channel: rotation.channel,
       blocks: [
-        {
-          "type": "section",
-          "text": {
-            "type": "mrkdwn",
-            "text": `It’s <@${
-              rotation.current_queue[0]
-            }>’s turn to be \`${rotation.name}\`.`,
-          },
-        },
+        ...content,
         {
           "type": "actions",
           "elements": [
@@ -112,6 +126,53 @@ export default SlackFunction(
       return { error: `Failed to send reminder: ${message.error}.` };
     }
 
+    if (
+      rotation.last_channel && rotation.last_message_ts && rotation.last_message
+    ) {
+      if (!inputs.replace_last) {
+        const response = await client.chat.update({
+          channel: rotation.last_channel,
+          ts: rotation.last_message_ts,
+          blocks: JSON.parse(rotation.last_message),
+        });
+
+        if (!response.ok) {
+          return {
+            error: `Error during chat.update: ${JSON.stringify(response)}.`,
+          };
+        }
+      } else {
+        const response = await client.chat.delete({
+          channel: rotation.last_channel,
+          ts: rotation.last_message_ts,
+        });
+
+        if (!response.ok) {
+          return {
+            error: `Error during chat.delete: ${JSON.stringify(response)}.`,
+          };
+        }
+      }
+    }
+
+    const response = await client.apps.datastore.update<
+      typeof RotationDatastore.definition
+    >({
+      datastore: RotationDatastore.name,
+      item: {
+        trigger_id: inputs.trigger_id,
+        last_channel: message.channel,
+        last_message_ts: message.ts,
+        last_message: JSON.stringify(content),
+      },
+    });
+
+    if (!response.ok) {
+      return {
+        error: `Error during datastore.delete: ${JSON.stringify(response)}.`,
+      };
+    }
+
     return {
       completed: false,
     };
@@ -128,28 +189,25 @@ export default SlackFunction(
     const rotation = rotationsResponse.item;
 
     if (!rotationsResponse.ok || !rotation) {
-      return { error: `Failed to fetch rotation: ${rotationsResponse.error}.` };
+      return {
+        error: `Failed to fetch rotation: ${
+          JSON.stringify(rotationsResponse)
+        }.`,
+      };
     }
 
     if (action.action_id === "confirm_turn") {
+      const content = buildReminderContent(rotation);
       const response = await client.chat.update({
         channel: body.container.channel_id,
         ts: body.container.message_ts,
-        blocks: [
-          {
-            "type": "section",
-            "text": {
-              "type": "mrkdwn",
-              "text": `It’s <@${
-                rotation.current_queue[0]
-              }>’s turn to be \`${rotation.name}\`.`,
-            },
-          },
-        ],
+        blocks: content,
       });
 
       if (!response.ok) {
-        return { error: `Error during chat.update ${response.error}.` };
+        return {
+          error: `Error during chat.update: ${JSON.stringify(response)}.`,
+        };
       }
 
       await client.functions.completeSuccess({
@@ -157,16 +215,6 @@ export default SlackFunction(
         outputs: {},
       });
     } else {
-      // TODO: handle postpone and skip differently
-      const response = await client.chat.delete({
-        channel: body.container.channel_id,
-        ts: body.container.message_ts,
-      });
-
-      if (!response.ok) {
-        return { error: `Error during chat.update ${response.error}.` };
-      }
-
       await client.functions.completeError({
         function_execution_id: body.function_data.execution_id,
         error: "Aborting the workflow...",
