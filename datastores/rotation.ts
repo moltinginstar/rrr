@@ -1,7 +1,7 @@
 import { DefineDatastore, DefineType, Schema } from "deno-slack-sdk/mod.ts";
 
 export const frequencies = ["daily", "weekly", "monthly"] as const;
-export type Frequency = typeof frequencies[number];
+export type Frequency = (typeof frequencies)[number];
 
 export const daysOfWeek = [
   "Monday",
@@ -12,7 +12,7 @@ export const daysOfWeek = [
   "Saturday",
   "Sunday",
 ] as const;
-export type DayOfWeek = typeof daysOfWeek[number];
+export type DayOfWeek = (typeof daysOfWeek)[number];
 
 export const IncludedDaysOfWeekType = DefineType({
   name: "IncludedDaysOfWeek",

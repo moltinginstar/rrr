@@ -52,9 +52,9 @@ const deleteRotation = async (
 
   if (!datastoreResponse.ok) {
     return {
-      error: `Failed to delete rotation data: ${
-        JSON.stringify(datastoreResponse)
-      }.`,
+      error: `Failed to delete rotation data: ${JSON.stringify(
+        datastoreResponse,
+      )}.`,
     };
   }
 
@@ -113,76 +113,71 @@ export default SlackFunction(
 
     const rotationList = rotations.flatMap((rotation, index) => {
       const rotationSummary = {
-        "type": "section",
-        "text": {
-          "type": "mrkdwn",
-          "text":
-            `*Name:* ${rotation.name}\n*Channel:* <#${rotation.channel}>\n*Schedule:* ${
-              formatSchedule({
-                time: rotation.time,
-                frequency: rotation.frequency,
-                repeats_every: rotation.repeats_every,
-                on_days: rotation.on_days,
-              })
-            }\n*Roster:* ${
-              rotation.roster.map((member: string) => `<@${member}>`).join(
-                ", ",
-              )
-            }\n*Next up:* <@${
-              rotation.current_queue?.[1] ?? rotation.roster[0]
-            }>`,
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Name:* ${rotation.name}\n*Channel:* <#${
+            rotation.channel
+          }>\n*Schedule:* ${formatSchedule({
+            time: rotation.time,
+            frequency: rotation.frequency,
+            repeats_every: rotation.repeats_every,
+            on_days: rotation.on_days,
+          })}\n*Roster:* ${rotation.roster
+            .map((member: string) => `<@${member}>`)
+            .join(", ")}\n*Next up:* <@${
+            rotation.current_queue?.[1] ?? rotation.roster[0]
+          }>`,
         },
       };
 
       const actionButtons = {
-        "type": "actions",
-        "elements": [
+        type: "actions",
+        elements: [
           {
-            "type": "workflow_button",
-            "text": {
-              "type": "plain_text",
-              "text": "Edit",
+            type: "workflow_button",
+            text: {
+              type: "plain_text",
+              text: "Edit",
             },
-            "action_id": `edit_rotation-${rotation.trigger_id}`,
-            "workflow": {
-              "trigger": {
-                "url":
-                  "https://slack.com/shortcuts/Ft068EGKG6JG/996a9ebe87ac264367856f92ec06dcf9",
-                "customizable_input_parameters": [
+            action_id: `edit_rotation-${rotation.trigger_id}`,
+            workflow: {
+              trigger: {
+                url: "https://slack.com/shortcuts/Ft068EGKG6JG/996a9ebe87ac264367856f92ec06dcf9",
+                customizable_input_parameters: [
                   {
-                    "name": "trigger_id",
-                    "value": rotation.trigger_id,
+                    name: "trigger_id",
+                    value: rotation.trigger_id,
                   },
                 ],
               },
             },
           },
           {
-            "type": "button",
-            "text": {
-              "type": "plain_text",
-              "text": "Delete",
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: "Delete",
             },
-            "style": "danger",
-            "action_id": `delete_rotation-${rotation.trigger_id}`,
-            "confirm": {
-              "title": {
-                "type": "plain_text",
-                "text": "Are you sure?",
+            style: "danger",
+            action_id: `delete_rotation-${rotation.trigger_id}`,
+            confirm: {
+              title: {
+                type: "plain_text",
+                text: "Are you sure?",
               },
-              "text": {
-                "type": "mrkdwn",
-                "text":
-                  "This will permanently delete the rotation and all of its data.",
+              text: {
+                type: "mrkdwn",
+                text: "This will permanently delete the rotation and all of its data.",
               },
-              "style": "danger",
-              "confirm": {
-                "type": "plain_text",
-                "text": "Delete",
+              style: "danger",
+              confirm: {
+                type: "plain_text",
+                text: "Delete",
               },
-              "deny": {
-                "type": "plain_text",
-                "text": "Cancel",
+              deny: {
+                type: "plain_text",
+                text: "Cancel",
               },
             },
           },
@@ -190,32 +185,30 @@ export default SlackFunction(
       };
 
       return index === 0
-        ? [
-          rotationSummary,
-          actionButtons,
-        ]
+        ? [rotationSummary, actionButtons]
         : [
-          {
-            "type": "divider",
-          },
-          rotationSummary,
-          actionButtons,
-        ];
+            {
+              type: "divider",
+            },
+            rotationSummary,
+            actionButtons,
+          ];
     });
 
     const message = await client.chat.postEphemeral({
       channel: inputs.channel,
       user: inputs.interactivity.interactor.id,
-      blocks: rotationList.length ? rotationList : [
-        {
-          "type": "section",
-          "text": {
-            "type": "mrkdwn",
-            "text":
-              `There are no rotations in <#${inputs.channel}>. Create one with \`/rrr\`!`,
-          },
-        },
-      ],
+      blocks: rotationList.length
+        ? rotationList
+        : [
+            {
+              type: "section",
+              text: {
+                type: "mrkdwn",
+                text: `There are no rotations in <#${inputs.channel}>. Create one with \`/rrr\`!`,
+              },
+            },
+          ],
     });
 
     if (!message.ok) {
@@ -239,8 +232,7 @@ export default SlackFunction(
       await client.chat.postEphemeral({
         channel: inputs.channel,
         user: inputs.interactivity.interactor.id,
-        text:
-          `The rotation \`${response.outputs?.name}\` was successfully deleted! :white_check_mark:`,
+        text: `The rotation \`${response.outputs?.name}\` was successfully deleted! :white_check_mark:`,
       });
     } else {
       return {

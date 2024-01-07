@@ -83,9 +83,9 @@ export default SlackFunction(
 
     if (!scheduledTrigger.trigger) {
       return {
-        error: `Trigger could not be created: ${
-          JSON.stringify(scheduledTrigger)
-        }.`,
+        error: `Trigger could not be created: ${JSON.stringify(
+          scheduledTrigger,
+        )}.`,
       };
     }
 
@@ -114,9 +114,9 @@ export default SlackFunction(
 
     if (!scheduledTrigger.trigger) {
       return {
-        error: `Trigger could not be saved: ${
-          JSON.stringify(scheduledTrigger)
-        }.`,
+        error: `Trigger could not be saved: ${JSON.stringify(
+          scheduledTrigger,
+        )}.`,
       };
     }
 
@@ -125,8 +125,7 @@ export default SlackFunction(
     >({
       type: TriggerTypes.Event,
       name: "Update roster when user leaves channel",
-      workflow:
-        `#/workflows/${RemoveUserFromRotationWorkflow.definition.callback_id}`,
+      workflow: `#/workflows/${RemoveUserFromRotationWorkflow.definition.callback_id}`,
       event: {
         event_type: TriggerEventTypes.UserLeftChannel,
         channel_ids: [inputs.channel],

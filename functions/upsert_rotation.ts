@@ -54,18 +54,23 @@ export const computeStartTime = (
     if (frequency.type === "daily") {
       startDate.setDate(now.getDate() + 1);
     } else if (frequency.type === "weekly") {
-      const sortedDays = frequency.on_days!
-        .map((day) => (jsDaysOfWeek.indexOf(day) - now.getDay() + 7) % 7)
+      const sortedDays = frequency
+        .on_days!.map(
+          (day) => (jsDaysOfWeek.indexOf(day) - now.getDay() + 7) % 7,
+        )
         .sort((a, b) => a - b);
       const daysUntilNextOccurrence = sortedDays[0];
       startDate.setDate(now.getDate() + daysUntilNextOccurrence);
     } else if (frequency.type === "monthly") {
-      const sortedDays = frequency.on_days!
-        .map((day) => (jsDaysOfWeek.indexOf(day) - now.getDay() + 7) % 7)
+      const sortedDays = frequency
+        .on_days!.map(
+          (day) => (jsDaysOfWeek.indexOf(day) - now.getDay() + 7) % 7,
+        )
         .sort((a, b) => a - b);
       const daysUntilNextOccurrence = sortedDays[0];
       startDate.setDate(
-        now.getDate() + daysUntilNextOccurrence +
+        now.getDate() +
+          daysUntilNextOccurrence +
           (daysUntilNextOccurrence <= 0 ? 30 : 0),
       );
     } else {

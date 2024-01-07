@@ -13,19 +13,13 @@ export const RemoveUserFromRotationWorkflow = DefineWorkflow({
         type: Schema.slack.types.user_id,
       },
     },
-    required: [
-      "trigger_id",
-      "user_id",
-    ],
+    required: ["trigger_id", "user_id"],
   },
 });
 
-RemoveUserFromRotationWorkflow.addStep(
-  RemoveUserFromRotationFunction,
-  {
-    trigger_id: RemoveUserFromRotationWorkflow.inputs.trigger_id,
-    user_id: RemoveUserFromRotationWorkflow.inputs.user_id,
-  },
-);
+RemoveUserFromRotationWorkflow.addStep(RemoveUserFromRotationFunction, {
+  trigger_id: RemoveUserFromRotationWorkflow.inputs.trigger_id,
+  user_id: RemoveUserFromRotationWorkflow.inputs.user_id,
+});
 
 export default RemoveUserFromRotationWorkflow;

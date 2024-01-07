@@ -18,35 +18,25 @@ export const CreateRotationWorkflow = DefineWorkflow({
   },
 });
 
-const RotationForm = CreateRotationWorkflow.addStep(
-  OpenRotationFormFunction,
-  {
-    interactivity: CreateRotationWorkflow.inputs.interactivity,
-    channel: CreateRotationWorkflow.inputs.channel,
-  },
-);
+const RotationForm = CreateRotationWorkflow.addStep(OpenRotationFormFunction, {
+  interactivity: CreateRotationWorkflow.inputs.interactivity,
+  channel: CreateRotationWorkflow.inputs.channel,
+});
 
-CreateRotationWorkflow.addStep(
-  CreateRotationFunction,
-  {
-    name: RotationForm.outputs.name,
-    channel: RotationForm.outputs.channel,
-    roster: RotationForm.outputs.roster,
-    time: RotationForm.outputs.time,
-    frequency: RotationForm.outputs.frequency,
-    repeats_every: RotationForm.outputs.repeats_every,
-    on_days: RotationForm.outputs.on_days,
-  },
-);
+CreateRotationWorkflow.addStep(CreateRotationFunction, {
+  name: RotationForm.outputs.name,
+  channel: RotationForm.outputs.channel,
+  roster: RotationForm.outputs.roster,
+  time: RotationForm.outputs.time,
+  frequency: RotationForm.outputs.frequency,
+  repeats_every: RotationForm.outputs.repeats_every,
+  on_days: RotationForm.outputs.on_days,
+});
 
-CreateRotationWorkflow.addStep(
-  Schema.slack.functions.SendEphemeralMessage,
-  {
-    channel_id: RotationForm.outputs.channel,
-    user_id: CreateRotationWorkflow.inputs.interactivity.interactor.id,
-    message:
-      `The rotation \`${RotationForm.outputs.name}\` was successfully created! :white_check_mark:`,
-  },
-);
+CreateRotationWorkflow.addStep(Schema.slack.functions.SendEphemeralMessage, {
+  channel_id: RotationForm.outputs.channel,
+  user_id: CreateRotationWorkflow.inputs.interactivity.interactor.id,
+  message: `The rotation \`${RotationForm.outputs.name}\` was successfully created! :white_check_mark:`,
+});
 
 export default CreateRotationWorkflow;

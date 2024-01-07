@@ -23,20 +23,14 @@ export const SendReminderWorkflow = DefineWorkflow({
   },
 });
 
-SendReminderWorkflow.addStep(
-  RotateFunction,
-  {
-    trigger_id: SendReminderWorkflow.inputs.trigger_id,
-    mode: SendReminderWorkflow.inputs.mode,
-  },
-);
+SendReminderWorkflow.addStep(RotateFunction, {
+  trigger_id: SendReminderWorkflow.inputs.trigger_id,
+  mode: SendReminderWorkflow.inputs.mode,
+});
 
-SendReminderWorkflow.addStep(
-  SendReminderFunction,
-  {
-    trigger_id: SendReminderWorkflow.inputs.trigger_id,
-    replace_last: SendReminderWorkflow.inputs.replace_last === "true",
-  },
-);
+SendReminderWorkflow.addStep(SendReminderFunction, {
+  trigger_id: SendReminderWorkflow.inputs.trigger_id,
+  replace_last: SendReminderWorkflow.inputs.replace_last === "true",
+});
 
 export default SendReminderWorkflow;

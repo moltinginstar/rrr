@@ -89,9 +89,9 @@ export default SlackFunction(
 
     if (!scheduledTrigger.trigger) {
       return {
-        error: `Trigger could not be saved: ${
-          JSON.stringify(scheduledTrigger)
-        }.`,
+        error: `Trigger could not be saved: ${JSON.stringify(
+          scheduledTrigger,
+        )}.`,
       };
     }
 
@@ -119,7 +119,9 @@ export default SlackFunction(
         channel: inputs.channel,
         name: inputs.name,
         roster: inputs.roster,
-        current_queue: getResponse.item.current_queue?.filter(roster.has.bind(roster)),
+        current_queue: getResponse.item.current_queue?.filter(
+          roster.has.bind(roster),
+        ),
         frequency: inputs.frequency,
         time: inputs.time,
         repeats_every: inputs.repeats_every,

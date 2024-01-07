@@ -14,10 +14,7 @@ export const RemoveUserFromRotationFunction = DefineFunction({
         type: Schema.slack.types.user_id,
       },
     },
-    required: [
-      "trigger_id",
-      "user_id",
-    ],
+    required: ["trigger_id", "user_id"],
   },
 });
 
@@ -47,7 +44,9 @@ export default SlackFunction(
       item: {
         trigger_id: inputs.trigger_id,
         roster: [...roster],
-        current_queue: getResponse.item.current_queue?.filter(roster.has.bind(roster)),
+        current_queue: getResponse.item.current_queue?.filter(
+          roster.has.bind(roster),
+        ),
       },
     });
 

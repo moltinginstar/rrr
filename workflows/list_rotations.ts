@@ -17,12 +17,9 @@ export const ListRotationsWorkflow = DefineWorkflow({
   },
 });
 
-ListRotationsWorkflow.addStep(
-  ListRotationsFunction,
-  {
-    interactivity: ListRotationsWorkflow.inputs.interactivity,
-    channel: ListRotationsWorkflow.inputs.channel,
-  },
-);
+ListRotationsWorkflow.addStep(ListRotationsFunction, {
+  interactivity: ListRotationsWorkflow.inputs.interactivity,
+  channel: ListRotationsWorkflow.inputs.channel,
+});
 
 export default ListRotationsWorkflow;

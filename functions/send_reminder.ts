@@ -5,17 +5,15 @@ import { RotationDatastore } from "../datastores/rotation.ts";
 export const sendReminderTriggerUrl =
   "https://slack.com/shortcuts/Ft06C9LF4VJ7/866bbe20949ff3208721dae7949ba7eb";
 
-const buildReminderContent = (
+export const buildReminderContent = (
   rotation: DatastoreItem<typeof RotationDatastore.definition>,
 ) => {
   return [
     {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": `It’s <@${
-          rotation.current_queue[0]
-        }>’s turn to be \`${rotation.name}\`.`,
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `It’s <@${rotation.current_queue[0]}>’s turn to be \`${rotation.name}\`.`,
       },
     },
   ];
@@ -60,58 +58,58 @@ export default SlackFunction(
       blocks: [
         ...content,
         {
-          "type": "actions",
-          "elements": [
+          type: "actions",
+          elements: [
             {
-              "type": "button",
-              "text": {
-                "type": "plain_text",
-                "text": "Confirm",
+              type: "button",
+              text: {
+                type: "plain_text",
+                text: "Confirm",
               },
-              "style": "primary",
-              "action_id": "confirm_turn",
+              style: "primary",
+              action_id: "confirm_turn",
             },
             {
-              "type": "workflow_button",
-              "text": {
-                "type": "plain_text",
-                "text": "Postpone",
+              type: "workflow_button",
+              text: {
+                type: "plain_text",
+                text: "Postpone",
               },
-              "action_id": "postpone_turn",
-              "workflow": {
-                "trigger": {
-                  "url": sendReminderTriggerUrl,
-                  "customizable_input_parameters": [
+              action_id: "postpone_turn",
+              workflow: {
+                trigger: {
+                  url: sendReminderTriggerUrl,
+                  customizable_input_parameters: [
                     {
-                      "name": "trigger_id",
-                      "value": rotation.trigger_id,
+                      name: "trigger_id",
+                      value: rotation.trigger_id,
                     },
                     {
-                      "name": "mode",
-                      "value": "postpone",
+                      name: "mode",
+                      value: "postpone",
                     },
                   ],
                 },
               },
             },
             {
-              "type": "workflow_button",
-              "text": {
-                "type": "plain_text",
-                "text": "Skip",
+              type: "workflow_button",
+              text: {
+                type: "plain_text",
+                text: "Skip",
               },
-              "action_id": "skip_turn",
-              "workflow": {
-                "trigger": {
-                  "url": sendReminderTriggerUrl,
-                  "customizable_input_parameters": [
+              action_id: "skip_turn",
+              workflow: {
+                trigger: {
+                  url: sendReminderTriggerUrl,
+                  customizable_input_parameters: [
                     {
-                      "name": "trigger_id",
-                      "value": rotation.trigger_id,
+                      name: "trigger_id",
+                      value: rotation.trigger_id,
                     },
                     {
-                      "name": "mode",
-                      "value": "skip",
+                      name: "mode",
+                      value: "skip",
                     },
                   ],
                 },
@@ -127,7 +125,9 @@ export default SlackFunction(
     }
 
     if (
-      rotation.last_channel && rotation.last_message_ts && rotation.last_message
+      rotation.last_channel &&
+      rotation.last_message_ts &&
+      rotation.last_message
     ) {
       if (!inputs.replace_last) {
         const response = await client.chat.update({
@@ -190,9 +190,9 @@ export default SlackFunction(
 
     if (!rotationsResponse.ok || !rotation) {
       return {
-        error: `Failed to fetch rotation: ${
-          JSON.stringify(rotationsResponse)
-        }.`,
+        error: `Failed to fetch rotation: ${JSON.stringify(
+          rotationsResponse,
+        )}.`,
       };
     }
 

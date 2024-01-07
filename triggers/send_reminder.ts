@@ -14,7 +14,7 @@ const sendReminderTrigger: Trigger<typeof SendReminderWorkflow.definition> = {
       customizable: true,
     },
     replace_last: {
-      value: "true",  // Slack doesn't support boolean values for trigger inputs
+      value: "true", // Slack doesn't support boolean values for trigger inputs
     },
   },
 };
