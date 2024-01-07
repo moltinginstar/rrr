@@ -33,7 +33,7 @@ const deleteRotation = async (
 
   const responses = await Promise.all(
     getResponse.item.trigger_ids?.map((triggerId: string) => {
-      client.workflows.triggers.delete({ trigger_id: triggerId });
+      return client.workflows.triggers.delete({ trigger_id: triggerId });
     }) ?? [],
   );
 
@@ -233,14 +233,13 @@ export default SlackFunction(
     if (triggerId) {
       const response = await deleteRotation({ trigger_id: triggerId }, client);
       if (response.error) {
-        console.error(response.error);
         return response;
       }
 
       await client.chat.postEphemeral({
-        channel_id: inputs.channel,
-        user_id: inputs.interactivity.interactor.id,
-        message:
+        channel: inputs.channel,
+        user: inputs.interactivity.interactor.id,
+        text:
           `The rotation \`${response.outputs?.name}\` was successfully deleted! :white_check_mark:`,
       });
     } else {
