@@ -2,8 +2,8 @@ import { Manifest } from "deno-slack-sdk/mod.ts";
 
 import {
   IncludedDaysOfWeekType,
-  RotationDatastore,
   RotationScheduleType,
+  RotationDatastore,
 } from "./datastores/rotation.ts";
 
 import { CreateRotationWorkflow } from "./workflows/create_rotation.ts";
@@ -26,7 +26,16 @@ import { RemoveUserFromRotationFunction } from "./functions/remove_user_from_rot
 export default Manifest({
   name: "rrr",
   description: "A round robin rotation app for pirates. Arrrgh!",
+  // longDescription: "",
   icon: "assets/icon.png",
+  // backgroundColor: "#000000",
+  features: {
+    appHome: {
+      // homeTabEnabled: true,
+      messagesTabEnabled: true,
+      messagesTabReadOnlyEnabled: false,
+    },
+  },
   datastores: [RotationDatastore],
   types: [IncludedDaysOfWeekType, RotationScheduleType],
   functions: [
