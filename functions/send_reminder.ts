@@ -1,6 +1,9 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import { RotationDatastore } from "../datastores/rotation.ts";
 
+export const sendReminderTriggerUrl =
+  "https://slack.com/shortcuts/Ft067NEMFMDG/6c580202e159ba1c664bc213bb6c339b";
+
 export const SendReminderFunction = DefineFunction({
   callback_id: "send_reminder_function",
   title: "Send a reminder",
@@ -63,8 +66,7 @@ export default SlackFunction(
               "action_id": "postpone_turn",
               "workflow": {
                 "trigger": {
-                  "url":
-                    "https://slack.com/shortcuts/Ft067FSBPBLH/d080870384441bbb795d15b85e21a67b",
+                  "url": sendReminderTriggerUrl,
                   "customizable_input_parameters": [
                     {
                       "name": "trigger_id",
@@ -87,8 +89,7 @@ export default SlackFunction(
               "action_id": "skip_turn",
               "workflow": {
                 "trigger": {
-                  "url":
-                    "https://slack.com/shortcuts/Ft067FSBPBLH/d080870384441bbb795d15b85e21a67b",
+                  "url": sendReminderTriggerUrl,
                   "customizable_input_parameters": [
                     {
                       "name": "trigger_id",
@@ -156,6 +157,7 @@ export default SlackFunction(
         outputs: {},
       });
     } else {
+      // TODO: handle postpone and skip differently 
       const response = await client.chat.delete({
         channel: body.container.channel_id,
         ts: body.container.message_ts,
@@ -165,10 +167,9 @@ export default SlackFunction(
         return { error: `Error during chat.update ${response.error}.` };
       }
 
-      // TODO: does this stop the workflow?
       await client.functions.completeError({
         function_execution_id: body.function_data.execution_id,
-        error: "Aborting the workflow.",
+        error: "Aborting the workflow...",
       });
     }
   },

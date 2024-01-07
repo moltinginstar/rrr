@@ -1,7 +1,8 @@
 import { Manifest } from "deno-slack-sdk/mod.ts";
 import {
   RotationDatastore,
-  // RotationScheduleOnDaysType,
+  IncludedDaysOfWeekType,
+  RotationScheduleType,
 } from "./datastores/rotation.ts";
 import { CreateRotationWorkflow } from "./workflows/create_rotation.ts";
 import { ListRotationsWorkflow } from "./workflows/list_rotations.ts";
@@ -18,8 +19,8 @@ export default Manifest({
   icon: "assets/icon.png",
   datastores: [RotationDatastore],
   types: [
-    // RotationScheduleType,
-    // RotationScheduleOnDaysType,
+    IncludedDaysOfWeekType,
+    RotationScheduleType,
   ],
   functions: [
     CreateRotationFunction,

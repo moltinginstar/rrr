@@ -1,13 +1,17 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-import { Schedule, daysOfWeek, frequencies } from "../datastores/rotation.ts";
+import {
+  daysOfWeek,
+  frequencies,
+  RotationScheduleType,
+  Schedule,
+} from "../datastores/rotation.ts";
+import { capitalize } from "../utils/index.ts";
 
 const defaultSchedule: Schedule = {
   frequency: "daily",
   time: "09:00",
   repeats_every: 1,
 };
-
-export const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export const formatSchedule = (schedule: Schedule) => {
   let summary = "";
@@ -49,16 +53,14 @@ export const formatSchedule = (schedule: Schedule) => {
 export const buildRotationForm = (
   // deno-lint-ignore no-explicit-any
   inputs: Record<string, any>,
-  // deno-lint-ignore no-explicit-any
-  privateMetadata: Record<string, any>,
+  privateMetadata: Schedule,
 ) => {
-  // deno-lint-ignore no-explicit-any
-  const scheduleSummary = formatSchedule(privateMetadata as any);
+  const scheduleSummary = formatSchedule(privateMetadata);
 
   return {
     "type": "modal",
     "callback_id": "rotation_form",
-    "external_id": "rotation_form_window6",
+    "external_id": "rotation_form_window7",
     "private_metadata": JSON.stringify(privateMetadata),
     "title": {
       "type": "plain_text",
@@ -215,6 +217,42 @@ export const buildScheduleForm = (schedule: Schedule = defaultSchedule) => {
     },
   };
 
+  const includedDay = {
+    "type": "input",
+    "block_id": "included_days",
+    "label": {
+      "type": "plain_text",
+      "text": "On",
+    },
+    "element": {
+      "type": "multi_static_select",
+      "action_id": "included_days_input",
+      "max_selected_items": 1,
+      "initial_options": schedule.on_days?.map((day) => ({
+        "text": {
+          "type": "plain_text",
+          "text": day,
+        },
+        "value": day,
+      }))?.slice(0, 1) ?? [
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Monday",
+          },
+          "value": "Monday",
+        },
+      ],
+      "options": daysOfWeek.map((day) => ({
+        "text": {
+          "type": "plain_text",
+          "text": day,
+        },
+        "value": day,
+      })),
+    },
+  };
+
   let blocks: object[];
   switch (schedule.frequency) {
     case "daily":
@@ -233,7 +271,7 @@ export const buildScheduleForm = (schedule: Schedule = defaultSchedule) => {
     case "monthly":
       blocks = [
         every,
-        includedDays,
+        includedDay,
         timepicker,
       ];
       break;
@@ -245,7 +283,7 @@ export const buildScheduleForm = (schedule: Schedule = defaultSchedule) => {
   return {
     "type": "modal",
     "callback_id": "schedule_form",
-    "external_id": "schedule_form_window6",
+    "external_id": "schedule_form_window7",
     "title": {
       "type": "plain_text",
       "text": "Edit schedule",
@@ -321,31 +359,13 @@ export const CreateRotationFunction = DefineFunction({
           type: Schema.slack.types.user_id,
         },
       },
-      time: {
-        type: Schema.types.string,
-      },
-      frequency: {
-        type: Schema.types.string,
-        enum: frequencies,
-      },
-      repeats_every: {
-        type: Schema.types.number,
-      },
-      on_days: {
-        type: Schema.types.array,
-        items: {
-          type: Schema.types.string,
-          enum: daysOfWeek,
-        },
-      },
+      ...RotationScheduleType.definition.properties,
     },
     required: [
       "name",
       "channel",
       "roster",
-      "time",
-      "frequency",
-      "repeats_every",
+      ...RotationScheduleType.definition.required,
     ],
   },
 });
@@ -369,7 +389,7 @@ export default SlackFunction(
       await (action.action_id === "edit_schedule"
         ? client.views.push
         : client.views.update)({
-          external_id: "schedule_form_window6",
+          external_id: "schedule_form_window7",
           interactivity_pointer: body.interactivity.interactivity_pointer,
           view: buildScheduleForm(
             body.view.private_metadata
@@ -396,12 +416,11 @@ export default SlackFunction(
     const { values } = view.state;
 
     await client.views.update({
-      external_id: "rotation_form_window6",
+      external_id: "rotation_form_window7",
       view: buildRotationForm(inputs, {
         frequency: values.frequency.frequency_input.selected_option.value,
         time: values.timepicker.timepicker_input.selected_time,
-        repeats_every: values.every?.every_input.value &&
-          parseInt(values.every?.every_input.value),
+        repeats_every: parseInt(values.every.every_input.value),
         on_days: values.included_days
           ?.included_days_input
           .selected_options.map(({ value }: { value: string }) => value),

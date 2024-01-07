@@ -14,43 +14,42 @@ export const daysOfWeek = [
 ] as const;
 export type DayOfWeek = typeof daysOfWeek[number];
 
+export const IncludedDaysOfWeekType = DefineType({
+  name: "IncludedDaysOfWeek",
+  type: Schema.types.array,
+  items: {
+    type: Schema.types.string,
+    enum: daysOfWeek,
+  },
+});
+
+export const RotationScheduleType = DefineType({
+  name: "Schedule",
+  type: Schema.types.object,
+  properties: {
+    time: {
+      type: Schema.types.string,
+    },
+    frequency: {
+      type: Schema.types.string,
+      enum: frequencies,
+    },
+    repeats_every: {
+      type: Schema.types.number,
+    },
+    on_days: {
+      type: IncludedDaysOfWeekType,
+    },
+  },
+  required: ["time", "frequency", "repeats_every"],
+});
+
 export type Schedule = {
   frequency: Frequency;
   repeats_every: number;
   on_days?: DayOfWeek[];
   time: string;
 };
-
-// export const RotationScheduleOnDaysType = DefineType({
-//   name: "ScheduleOnDays",
-//   type: Schema.types.array,
-//   items: {
-//     type: Schema.types.string,
-//     enum: daysOfWeek,
-//   },
-//   default: [],
-// });
-
-// export const RotationScheduleType = DefineType({
-//   name: "Schedule",
-//   type: Schema.types.object,
-//   properties: {
-//     time: {
-//       type: Schema.types.string,
-//     },
-//     frequency: {
-//       type: Schema.types.string,
-//       enum: frequencies,
-//     },
-//     repeats_every: {
-//       type: Schema.types.number,
-//     },
-//     on_days: {
-//       type: RotationScheduleOnDaysType,
-//     },
-//   },
-//   required: ["time", "frequency", "repeats_every"],
-// });
 
 export const RotationDatastore = DefineDatastore({
   name: "rotation",
