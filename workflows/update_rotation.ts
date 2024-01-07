@@ -29,6 +29,7 @@ const Rotation = UpdateRotationWorkflow.addStep(GetRotationFunction, {
 
 const RotationForm = UpdateRotationWorkflow.addStep(OpenRotationFormFunction, {
   interactivity: Rotation.outputs.interactivity,
+  mode: "update",
   name: Rotation.outputs.name,
   channel: Rotation.outputs.channel,
   roster: Rotation.outputs.roster,

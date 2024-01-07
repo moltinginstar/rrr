@@ -134,8 +134,6 @@ export default SlackFunction(
       };
     }
 
-    // TODO: update event triggers
-
     return {
       outputs: { trigger_id: triggerId },
     };

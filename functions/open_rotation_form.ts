@@ -51,6 +51,105 @@ export const buildRotationForm = (
   inputs: Record<string, any>,
   schedule: Schedule = defaultSchedule,
 ) => {
+  const blocks = [
+    {
+      type: "input",
+      block_id: "rotation_name",
+      label: {
+        type: "plain_text",
+        text: "Rotation name",
+      },
+      element: {
+        type: "plain_text_input",
+        placeholder: {
+          type: "plain_text",
+          text: "Team meeting facilitator",
+        },
+        action_id: "rotation_name_input",
+        initial_value: inputs.name,
+      },
+    },
+    ...(inputs.mode === "update" // This is to avoid having to edit the channel_ids of the RemoveUserFromRotationWorkflow trigger
+      ? [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*Channel*`,
+            },
+          },
+          {
+            type: "section",
+            block_id: "channel",
+            text: {
+              type: "mrkdwn",
+              text: `<#${inputs.channel}>`,
+            },
+          },
+        ]
+      : [
+          {
+            type: "input",
+            block_id: "channel",
+            label: {
+              type: "plain_text",
+              text: "Channel",
+            },
+            element: {
+              type: "conversations_select",
+              action_id: "channel_input",
+              initial_conversation: inputs.channel,
+            },
+          },
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `_If you choose a private channel, make sure you add rrr as a member._`,
+            },
+          },
+        ]),
+    {
+      type: "input",
+      block_id: "roster",
+      label: {
+        type: "plain_text",
+        text: "Roster",
+      },
+      element: {
+        type: "multi_users_select",
+        action_id: "roster_input",
+        initial_users: inputs.roster,
+      },
+    },
+    {
+      type: "divider",
+    },
+    {
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `*Schedule*`,
+      },
+    },
+    {
+      type: "section",
+      block_id: "schedule",
+      text: {
+        type: "mrkdwn",
+        text: `${formatSchedule(schedule)}`,
+      },
+      accessory: {
+        type: "button",
+        action_id: "edit_schedule",
+        text: {
+          type: "plain_text",
+          text: "Edit",
+        },
+      },
+    },
+  ];
+
   return {
     type: "modal",
     callback_id: "rotation_form",
@@ -58,7 +157,7 @@ export const buildRotationForm = (
     private_metadata: JSON.stringify({ schedule }),
     title: {
       type: "plain_text",
-      text: "Create rotation",
+      text: inputs.mode === "update" ? "Edit rotation" : "Create rotation",
     },
     close: {
       type: "plain_text",
@@ -68,77 +167,7 @@ export const buildRotationForm = (
       type: "plain_text",
       text: "Save",
     },
-    blocks: [
-      {
-        type: "input",
-        block_id: "rotation_name",
-        label: {
-          type: "plain_text",
-          text: "Rotation name",
-        },
-        element: {
-          type: "plain_text_input",
-          placeholder: {
-            type: "plain_text",
-            text: "Team meeting facilitator",
-          },
-          action_id: "rotation_name_input",
-          initial_value: inputs.name,
-        },
-      },
-      {
-        type: "input",
-        block_id: "channel",
-        label: {
-          type: "plain_text",
-          text: "Channel",
-        },
-        element: {
-          type: "conversations_select",
-          action_id: "channel_input",
-          initial_conversation: inputs.channel,
-        },
-      },
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: `_If you choose a private channel, make sure you add rrr as a member._`,
-        },
-      },
-      {
-        type: "input",
-        block_id: "roster",
-        label: {
-          type: "plain_text",
-          text: "Roster",
-        },
-        element: {
-          type: "multi_users_select",
-          action_id: "roster_input",
-          initial_users: inputs.roster,
-        },
-      },
-      {
-        type: "divider",
-      },
-      {
-        type: "section",
-        block_id: "schedule",
-        text: {
-          type: "mrkdwn",
-          text: `*Schedule:* ${formatSchedule(schedule)}`,
-        },
-        accessory: {
-          type: "button",
-          action_id: "edit_schedule",
-          text: {
-            type: "plain_text",
-            text: "Edit",
-          },
-        },
-      },
-    ],
+    blocks,
   };
 };
 
@@ -324,6 +353,11 @@ export const OpenRotationFormFunction = DefineFunction({
       interactivity: {
         type: Schema.slack.types.interactivity,
       },
+      mode: {
+        type: Schema.types.string,
+        enum: ["create", "update"],
+        default: "create",
+      },
       channel: {
         type: Schema.slack.types.channel_id,
         description: "The ID of the channel to create a schedule for",
@@ -395,7 +429,7 @@ export default SlackFunction(
       const response = await (action.action_id === "edit_schedule"
         ? client.views.push
         : client.views.update)({
-        external_id: "schedule_form_window9",
+        external_id: "schedule_form_window9", // TODO: rename
         interactivity_pointer: body.interactivity.interactivity_pointer,
         view: buildScheduleForm(
           body.view.private_metadata
@@ -441,15 +475,18 @@ export default SlackFunction(
   )
   .addViewSubmissionHandler(
     ["rotation_form"],
-    async ({ client, body, view }) => {
+    async ({ inputs, client, body, view }) => {
       const { values } = view.state;
-      const scheduleValues = JSON.parse(view.private_metadata ?? "{}").schedule;
+      const scheduleValues = JSON.parse(view.private_metadata ?? "{}")
+        .schedule as Schedule;
 
       const complete = await client.functions.completeSuccess({
         function_execution_id: body.function_data.execution_id,
         outputs: {
           name: values.rotation_name.rotation_name_input.value,
-          channel: values.channel.channel_input.selected_conversation,
+          channel:
+            values.channel?.channel_input.selected_conversation ??
+            inputs.channel,
           roster: values.roster.roster_input.selected_users,
           time: scheduleValues.time,
           frequency: scheduleValues.frequency,
