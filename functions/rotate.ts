@@ -21,18 +21,16 @@ export const RotateFunction = DefineFunction({
 });
 
 export default SlackFunction(RotateFunction, async ({ inputs, client }) => {
-  const rotations = await client.apps.datastore.query<
+  const rotationsResponse = await client.apps.datastore.get<
     typeof RotationDatastore.definition
   >({
     datastore: RotationDatastore.name,
-    expression: "#trigger_id = :trigger_id",
-    expression_attributes: { "#trigger_id": "trigger_id" },
-    expression_values: { ":trigger_id": inputs.trigger_id },
+    id: inputs.trigger_id,
   });
-  const rotation = rotations.items[0];
+  const rotation = rotationsResponse.item;
 
-  if (!rotations.ok || !rotation) {
-    return { error: `Failed to fetch rotation: ${rotations.error}` };
+  if (!rotationsResponse.ok || !rotation) {
+    return { error: `Failed to fetch rotation: ${rotationsResponse.error}.` };
   }
 
   let newQueue;
@@ -57,7 +55,7 @@ export default SlackFunction(RotateFunction, async ({ inputs, client }) => {
   });
 
   if (!response.ok) {
-    return { error: `Failed to rotate: ${response.error}` };
+    return { error: `Failed to rotate: ${response.error}.` };
   }
 
   return {

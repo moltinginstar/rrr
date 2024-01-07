@@ -18,18 +18,16 @@ export const SendReminderFunction = DefineFunction({
 export default SlackFunction(
   SendReminderFunction,
   async ({ inputs, client }) => {
-    const rotations = await client.apps.datastore.query<
+    const rotationsResponse = await client.apps.datastore.get<
       typeof RotationDatastore.definition
     >({
       datastore: RotationDatastore.name,
-      expression: "#trigger_id = :trigger_id",
-      expression_attributes: { "#trigger_id": "trigger_id" },
-      expression_values: { ":trigger_id": inputs.trigger_id },
+      id: inputs.trigger_id,
     });
-    const rotation = rotations.items[0];
+    const rotation = rotationsResponse.item;
 
-    if (!rotations.ok || !rotation) {
-      return { error: `Failed to fetch rotation: ${rotations.error}` };
+    if (!rotationsResponse.ok || !rotation) {
+      return { error: `Failed to fetch rotation: ${rotationsResponse.error}.` };
     }
 
     const message = await client.chat.postMessage({
@@ -65,7 +63,8 @@ export default SlackFunction(
               "action_id": "postpone_turn",
               "workflow": {
                 "trigger": {
-                  "url": "https://slack.com/shortcuts/Ft067FSBPBLH/d080870384441bbb795d15b85e21a67b",
+                  "url":
+                    "https://slack.com/shortcuts/Ft067FSBPBLH/d080870384441bbb795d15b85e21a67b",
                   "customizable_input_parameters": [
                     {
                       "name": "trigger_id",
@@ -88,7 +87,8 @@ export default SlackFunction(
               "action_id": "skip_turn",
               "workflow": {
                 "trigger": {
-                  "url": "https://slack.com/shortcuts/Ft067FSBPBLH/d080870384441bbb795d15b85e21a67b",
+                  "url":
+                    "https://slack.com/shortcuts/Ft067FSBPBLH/d080870384441bbb795d15b85e21a67b",
                   "customizable_input_parameters": [
                     {
                       "name": "trigger_id",
@@ -108,7 +108,7 @@ export default SlackFunction(
     });
 
     if (!message.ok) {
-      return { error: `Failed to send reminder: ${message.error}` };
+      return { error: `Failed to send reminder: ${message.error}.` };
     }
 
     return {
@@ -118,18 +118,16 @@ export default SlackFunction(
 ).addBlockActionsHandler(
   ["confirm_turn", "postpone_turn", "skip_turn"],
   async ({ body, inputs, action, client }) => {
-    const rotations = await client.apps.datastore.query<
+    const rotationsResponse = await client.apps.datastore.get<
       typeof RotationDatastore.definition
     >({
       datastore: RotationDatastore.name,
-      expression: "#trigger_id = :trigger_id",
-      expression_attributes: { "#trigger_id": "trigger_id" },
-      expression_values: { ":trigger_id": inputs.trigger_id },
+      id: inputs.trigger_id,
     });
-    const rotation = rotations.items[0];
+    const rotation = rotationsResponse.item;
 
-    if (!rotations.ok || !rotation) {
-      return { error: `Failed to fetch rotation: ${rotations.error}` };
+    if (!rotationsResponse.ok || !rotation) {
+      return { error: `Failed to fetch rotation: ${rotationsResponse.error}.` };
     }
 
     if (action.action_id === "confirm_turn") {

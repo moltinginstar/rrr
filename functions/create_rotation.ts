@@ -72,12 +72,13 @@ export const buildRotationForm = (
   // deno-lint-ignore no-explicit-any
   privateMetadata: Record<string, any>,
 ) => {
+  // deno-lint-ignore no-explicit-any
   const scheduleSummary = formatSchedule(privateMetadata as any);
 
   return {
     "type": "modal",
     "callback_id": "rotation_form",
-    "external_id": "rotation_form_window4",
+    "external_id": "rotation_form_window6",
     "private_metadata": JSON.stringify(privateMetadata),
     "title": {
       "type": "plain_text",
@@ -264,7 +265,7 @@ export const buildScheduleForm = (schedule: Schedule = defaultSchedule) => {
   return {
     "type": "modal",
     "callback_id": "schedule_form",
-    "external_id": "schedule_form_window4",
+    "external_id": "schedule_form_window6",
     "title": {
       "type": "plain_text",
       "text": "Edit schedule",
@@ -386,7 +387,7 @@ export default SlackFunction(
       await (action.action_id === "edit_schedule"
         ? client.views.push
         : client.views.update)({
-          external_id: "schedule_form_window4",
+          external_id: "schedule_form_window6",
           interactivity_pointer: body.interactivity.interactivity_pointer,
           view: buildScheduleForm(
             body.view.private_metadata
@@ -413,7 +414,7 @@ export default SlackFunction(
     const { values } = view.state;
 
     await client.views.update({
-      external_id: "rotation_form_window4",
+      external_id: "rotation_form_window6",
       view: buildRotationForm(inputs, {
         frequency: values.frequency.frequency_input.selected_option.value,
         time: values.timepicker.timepicker_input.selected_time,
@@ -447,7 +448,7 @@ export default SlackFunction(
     if (!complete.ok) {
       await client.functions.completeError({
         function_execution_id: body.function_data.execution_id,
-        error: `Error completing function: ${complete}`,
+        error: `Error completing function: ${complete}.`,
       });
     }
   },
