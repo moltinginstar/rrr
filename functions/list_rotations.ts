@@ -129,7 +129,7 @@ export default SlackFunction(
                 ", ",
               )
             }\n*Next up:* <@${
-              rotation.current_queue?.[0] ?? rotation.roster[0]
+              rotation.current_queue?.[1] ?? rotation.roster[0]
             }>`,
         },
       };
