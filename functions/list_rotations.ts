@@ -59,7 +59,9 @@ const deleteRotation = async (
   }
 
   return {
-    outputs: {},
+    outputs: {
+      name: getResponse.item.name,
+    },
   };
 };
 
@@ -226,13 +228,21 @@ export default SlackFunction(
   },
 ).addBlockActionsHandler(
   /delete_rotation-(.*)/,
-  async ({ action, client }) => {
+  async ({ action, inputs, client }) => {
     const triggerId = action.action_id.match(/delete_rotation-(.*)/)?.[1];
     if (triggerId) {
       const response = await deleteRotation({ trigger_id: triggerId }, client);
       if (response.error) {
+        console.error(response.error);
         return response;
       }
+
+      await client.chat.postEphemeral({
+        channel_id: inputs.channel,
+        user_id: inputs.interactivity.interactor.id,
+        message:
+          `The rotation \`${response.outputs?.name}\` was successfully deleted! :white_check_mark:`,
+      });
     } else {
       return {
         error: "Could not find rotation to delete.",
