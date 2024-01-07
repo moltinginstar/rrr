@@ -6,7 +6,8 @@ export const buildRotationForm = (
   // deno-lint-ignore no-explicit-any
   privateMetadata: Record<string, any>,
 ) => {
-  const scheduleSummary = `${privateMetadata.time} ${privateMetadata.frequency}`;
+  const scheduleSummary =
+    `${privateMetadata.time} ${privateMetadata.frequency}`;
 
   return {
     "type": "modal",
@@ -334,8 +335,6 @@ export default SlackFunction(
       view: buildRotationForm(inputs, {
         frequency: "daily",
         time: "09:00",
-        repeats_every: null,
-        on_days: null,
       }),
     });
 
@@ -371,8 +370,11 @@ export default SlackFunction(
       view: buildRotationForm(inputs, {
         frequency: values.frequency.frequency_input.selected_option.value,
         time: values.timepicker.timepicker_input.selected_time,
-        repeats_every: values.every?.every_input.value ? parseInt(values.every?.every_input.value) : null,
-        on_days: values.included_days?.included_days_input.selected_options.map(({ value }: { value: string }) => value) ?? null,
+        repeats_every: values.every?.every_input.value ??
+          parseInt(values.every?.every_input.value),
+        on_days: values.included_days
+          ?.included_days_input
+          .selected_options.map(({ value }: { value: string }) => value),
       }),
     });
   },
@@ -398,7 +400,7 @@ export default SlackFunction(
     if (!complete.ok) {
       await client.functions.completeError({
         function_execution_id: body.function_data.execution_id,
-        error: "Error completing function",
+        error: `Error completing function: ${complete}`,
       });
     }
   },

@@ -18,7 +18,10 @@ export default Manifest({
     RotateFunction,
     UpsertRotationFunction,
   ],
-  workflows: [CreateRotationWorkflow, SendReminderWorkflow],
+  workflows: [
+    CreateRotationWorkflow,
+    SendReminderWorkflow,
+  ],
   outgoingDomains: [],
   botScopes: [
     "commands",
