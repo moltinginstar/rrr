@@ -4,3 +4,6 @@ package
 .slack/apps.dev.json
 
 .vscode
+.husky
+
+node_modules
