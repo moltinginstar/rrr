@@ -10,6 +10,11 @@ export const RotateFunction = DefineFunction({
       trigger_id: {
         type: Schema.types.string,
       },
+      mode: {
+        type: Schema.types.string,
+        enum: ["skip", "postpone"],
+        default: "skip",
+      },
     },
     required: ["trigger_id"],
   },
@@ -30,15 +35,24 @@ export default SlackFunction(RotateFunction, async ({ inputs, client }) => {
     return { error: `Failed to fetch rotation: ${rotations.error}` };
   }
 
+  let newQueue;
+  if (inputs.mode === "skip") {
+    newQueue = rotation.current_queue?.length > 1
+      ? rotation.current_queue.slice(1)
+      : rotation.roster;
+  } else {
+    newQueue = rotation.current_queue?.length > 1
+      ? [rotation.current_queue[1], rotation.current_queue[0], ...rotation.current_queue.slice(2)]
+      : rotation.roster;
+  }
+
   const response = await client.apps.datastore.update<
     typeof RotationDatastore.definition
   >({
     datastore: RotationDatastore.name,
     item: {
       trigger_id: inputs.trigger_id,
-      current_queue: rotation.current_queue.length > 1
-        ? rotation.current_queue.slice(1)
-        : rotation.roster,
+      current_queue: newQueue,
     },
   });
 

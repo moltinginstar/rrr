@@ -72,6 +72,9 @@ export default SlackFunction(
           trigger_id: {
             value: null,
           },
+          mode: {
+            value: "skip",
+          },
         },
         schedule: {
           start_time: computeStartTime(inputs.time, inputs.frequency),
@@ -80,7 +83,7 @@ export default SlackFunction(
       });
 
       if (!scheduledTrigger?.trigger) {
-        return { error: "Trigger could not be saved" + scheduledTrigger.error };
+        return { error: `Trigger could not be saved: ${scheduledTrigger.error}` };
       }
     }
 
@@ -95,6 +98,9 @@ export default SlackFunction(
         trigger_id: {
           value: scheduledTrigger!.trigger.trigger_id ?? inputs.trigger_id,
         },
+        mode: {
+          value: "skip",
+        },
       },
       schedule: {
         start_time: computeStartTime(inputs.time, inputs.frequency),
@@ -103,7 +109,7 @@ export default SlackFunction(
     });
 
     if (!scheduledTrigger.trigger) {
-      return { error: "Trigger could not be saved" + scheduledTrigger.error };
+      return { error: `Trigger could not be saved ${scheduledTrigger.error}` };
     }
 
     const response = await client.apps.datastore.update<
@@ -115,7 +121,8 @@ export default SlackFunction(
         channel: inputs.channel,
         name: inputs.name,
         roster: inputs.roster,
-        current_queue: inputs.roster, // TODO: diff and merge?
+        // TODO: null/undefined when creating, (current_queue - roster) when updating
+        // current_queue: inputs.roster,
       },
     });
 

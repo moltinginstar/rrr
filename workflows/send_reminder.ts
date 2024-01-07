@@ -10,10 +10,22 @@ export const SendReminderWorkflow = DefineWorkflow({
       trigger_id: {
         type: Schema.types.string,
       },
+      mode: {
+        type: Schema.types.string,
+        enum: ["skip", "postpone"],
+      }
     },
-    required: ["trigger_id"],
+    required: ["trigger_id", "mode"],
   },
 });
+
+SendReminderWorkflow.addStep(
+  RotateFunction,
+  {
+    trigger_id: SendReminderWorkflow.inputs.trigger_id,
+    mode: SendReminderWorkflow.inputs.mode,
+  },
+);
 
 SendReminderWorkflow.addStep(
   SendReminderFunction,
@@ -21,9 +33,5 @@ SendReminderWorkflow.addStep(
     trigger_id: SendReminderWorkflow.inputs.trigger_id,
   },
 );
-SendReminderWorkflow.addStep(
-  RotateFunction,
-  {
-    trigger_id: SendReminderWorkflow.inputs.trigger_id,
-  },
-);
+
+export default SendReminderWorkflow;
