@@ -47,7 +47,7 @@ export default SlackFunction(
       item: {
         trigger_id: inputs.trigger_id,
         roster: [...roster],
-        current_queue: getResponse.item.current_queue?.filter(roster.has),
+        current_queue: getResponse.item.current_queue?.filter(roster.has.bind(roster)),
       },
     });
 

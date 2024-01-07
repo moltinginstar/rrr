@@ -119,7 +119,7 @@ export default SlackFunction(
         channel: inputs.channel,
         name: inputs.name,
         roster: inputs.roster,
-        current_queue: getResponse.item.current_queue?.filter(roster.has),
+        current_queue: getResponse.item.current_queue?.filter(roster.has.bind(roster)),
         frequency: inputs.frequency,
         time: inputs.time,
         repeats_every: inputs.repeats_every,

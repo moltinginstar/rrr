@@ -40,7 +40,11 @@ export default SlackFunction(RotateFunction, async ({ inputs, client }) => {
       : rotation.roster;
   } else {
     newQueue = rotation.current_queue?.length > 1
-      ? [rotation.current_queue[1], rotation.current_queue[0], ...rotation.current_queue.slice(2)]
+      ? [
+        rotation.current_queue[1],
+        rotation.current_queue[0],
+        ...rotation.current_queue.slice(2),
+      ]
       : rotation.roster;
   }
 
