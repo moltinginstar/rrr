@@ -2,13 +2,12 @@ import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import { TriggerEventTypes, TriggerTypes } from "deno-slack-api/mod.ts";
 import { SendReminderWorkflow } from "../workflows/send_reminder.ts";
 import {
-  type DayOfWeek,
-  type Frequency,
   RotationDatastore,
   RotationScheduleType,
 } from "../datastores/rotation.ts";
 import { computeStartTime, getTriggerFrequency } from "./upsert_rotation.ts";
 import RemoveUserFromRotationWorkflow from "../workflows/remove_user_from_rotation.ts";
+import type { DayOfWeek, Frequency, Time } from "../types/index.ts";
 
 export const CreateRotationFunction = DefineFunction({
   title: "Create a scheduled trigger",
@@ -57,7 +56,7 @@ export default SlackFunction(
     const triggerFrequency = getTriggerFrequency({
       frequency: inputs.frequency as Frequency,
       repeats_every: inputs.repeats_every,
-      time: inputs.time,
+      time: inputs.time as Time,
       on_days: inputs.on_days as DayOfWeek[] | undefined,
     });
 
@@ -76,7 +75,7 @@ export default SlackFunction(
         },
       },
       schedule: {
-        start_time: computeStartTime(inputs.time, triggerFrequency),
+        start_time: computeStartTime(inputs.time as Time, triggerFrequency),
         frequency: triggerFrequency,
       },
     });
@@ -107,7 +106,7 @@ export default SlackFunction(
         },
       },
       schedule: {
-        start_time: computeStartTime(inputs.time, triggerFrequency),
+        start_time: computeStartTime(inputs.time as Time, triggerFrequency),
         frequency: triggerFrequency,
       },
     });

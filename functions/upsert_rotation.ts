@@ -1,11 +1,8 @@
 import { SendReminderWorkflow } from "../workflows/send_reminder.ts";
-import {
-  DayOfWeek,
-  daysOfWeek,
-  Frequency,
-  Schedule,
-} from "../datastores/rotation.ts";
+import { Schedule } from "../datastores/rotation.ts";
 import { ScheduledTrigger } from "deno-slack-api/typed-method-types/workflows/triggers/scheduled.ts";
+import { daysOfWeek } from "../consts/index.ts";
+import type { DayOfWeek, Frequency, Time } from "../types/index.ts";
 
 export type ScheduledTriggerFrequency = Extract<
   ScheduledTrigger<
@@ -41,14 +38,14 @@ export const getTriggerFrequency = (inputs: Schedule) => {
 export const jsDaysOfWeek = [daysOfWeek[6], ...daysOfWeek.slice(0, 6)];
 
 export const computeStartTime = (
-  time: string,
+  time: Time,
   frequency: ScheduledTriggerFrequency,
 ) => {
   const now = new Date();
   const [hours, minutes] = time.split(":").map(Number);
 
   const startDate = new Date(now);
-  startDate.setHours(hours, minutes, 0, 0);
+  startDate.setHours(hours, minutes);
 
   if (startDate <= now) {
     if (frequency.type === "daily") {

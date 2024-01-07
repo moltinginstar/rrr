@@ -1,8 +1,46 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-import { DatastoreItem } from "deno-slack-api/types.ts";
+import type { DatastoreItem } from "deno-slack-api/types.ts";
+import type { SlackAPIClient } from "deno-slack-sdk/deps.ts";
 import { RotationDatastore } from "../datastores/rotation.ts";
 import { formatSchedule } from "./open_rotation_form.ts";
-import { deleteRotation } from "./delete_rotation.ts";
+import { deleteRotation } from "./delete_rotations.ts";
+
+export const listRotations = async (
+  inputs: { channel: string },
+  client: SlackAPIClient,
+) => {
+  const rotations: DatastoreItem<typeof RotationDatastore.definition>[] = [];
+
+  let cursor: string | undefined;
+  do {
+    const response = await client.apps.datastore.query<
+      typeof RotationDatastore.definition
+    >({
+      datastore: RotationDatastore.name,
+      expression: "#channel = :channel",
+      expression_attributes: { "#channel": "channel" },
+      expression_values: { ":channel": inputs.channel },
+      limit: 1000,
+      cursor,
+    });
+
+    if (!response.ok) {
+      return {
+        error: `Failed to fetch rotations: ${JSON.stringify(response)}.`,
+      };
+    }
+
+    rotations.push(...response.items);
+
+    cursor = response.response_metadata?.next_cursor;
+  } while (cursor);
+
+  return {
+    outputs: {
+      rotations,
+    },
+  };
+};
 
 export const ListRotationsFunction = DefineFunction({
   callback_id: "list_rotations_function",
@@ -24,115 +62,96 @@ export const ListRotationsFunction = DefineFunction({
 export default SlackFunction(
   ListRotationsFunction,
   async ({ inputs, client }) => {
-    const rotations: DatastoreItem<typeof RotationDatastore.definition>[] = [];
+    const rotations = await listRotations(inputs, client);
+    if (rotations.error) {
+      return rotations;
+    }
 
-    let cursor: string | undefined;
-    do {
-      const response = await client.apps.datastore.query<
-        typeof RotationDatastore.definition
-      >({
-        datastore: RotationDatastore.name,
-        expression: "#channel = :channel",
-        expression_attributes: { "#channel": "channel" },
-        expression_values: { ":channel": inputs.channel },
-        limit: 1000,
-        cursor,
-      });
-
-      if (!response.ok) {
-        return {
-          error: `Failed to fetch rotations: ${JSON.stringify(response)}.`,
-        };
-      }
-
-      rotations.push(...response.items);
-
-      cursor = response.response_metadata?.next_cursor;
-    } while (cursor);
-
-    const rotationList = rotations.flatMap((rotation, index) => {
-      const rotationSummary = {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: `*Name:* ${rotation.name}\n*Channel:* <#${
-            rotation.channel
-          }>\n*Schedule:* ${formatSchedule({
-            time: rotation.time,
-            frequency: rotation.frequency,
-            repeats_every: rotation.repeats_every,
-            on_days: rotation.on_days,
-          })}\n*Roster:* ${rotation.roster
-            .map((member: string) => `<@${member}>`)
-            .join(", ")}\n*Next up:* <@${
-            rotation.current_queue?.[1] ?? rotation.roster[0]
-          }>`,
-        },
-      };
-
-      const actionButtons = {
-        type: "actions",
-        elements: [
-          {
-            type: "workflow_button",
-            text: {
-              type: "plain_text",
-              text: "Edit",
-            },
-            action_id: `edit_rotation-${rotation.trigger_id}`,
-            workflow: {
-              trigger: {
-                url: "https://slack.com/shortcuts/Ft068EGKG6JG/996a9ebe87ac264367856f92ec06dcf9",
-                customizable_input_parameters: [
-                  {
-                    name: "trigger_id",
-                    value: rotation.trigger_id,
-                  },
-                ],
-              },
-            },
+    const rotationList = rotations.outputs!.rotations.flatMap(
+      (rotation, index) => {
+        const rotationSummary = {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `*Name:* ${rotation.name}\n*Channel:* <#${
+              rotation.channel
+            }>\n*Schedule:* ${formatSchedule({
+              time: rotation.time,
+              frequency: rotation.frequency,
+              repeats_every: rotation.repeats_every,
+              on_days: rotation.on_days,
+            })}\n*Roster:* ${rotation.roster
+              .map((member: string) => `<@${member}>`)
+              .join(", ")}\n*Next up:* <@${
+              rotation.current_queue?.[1] ?? rotation.roster[0]
+            }>`,
           },
-          {
-            type: "button",
-            text: {
-              type: "plain_text",
-              text: "Delete",
-            },
-            style: "danger",
-            action_id: `delete_rotation-${rotation.trigger_id}`,
-            confirm: {
-              title: {
-                type: "plain_text",
-                text: "Are you sure?",
-              },
+        };
+
+        const actionButtons = {
+          type: "actions",
+          elements: [
+            {
+              type: "workflow_button",
               text: {
-                type: "mrkdwn",
-                text: "This will permanently delete the rotation and all of its data.",
+                type: "plain_text",
+                text: "Edit",
               },
-              style: "danger",
-              confirm: {
+              action_id: `edit_rotation-${rotation.trigger_id}`,
+              workflow: {
+                trigger: {
+                  url: "https://slack.com/shortcuts/Ft068EGKG6JG/996a9ebe87ac264367856f92ec06dcf9",
+                  customizable_input_parameters: [
+                    {
+                      name: "trigger_id",
+                      value: rotation.trigger_id,
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              type: "button",
+              text: {
                 type: "plain_text",
                 text: "Delete",
               },
-              deny: {
-                type: "plain_text",
-                text: "Cancel",
+              style: "danger",
+              action_id: `delete_rotation-${rotation.trigger_id}`,
+              confirm: {
+                title: {
+                  type: "plain_text",
+                  text: "Are you sure?",
+                },
+                text: {
+                  type: "mrkdwn",
+                  text: "This will permanently delete the rotation and all of its data.",
+                },
+                style: "danger",
+                confirm: {
+                  type: "plain_text",
+                  text: "Delete",
+                },
+                deny: {
+                  type: "plain_text",
+                  text: "Cancel",
+                },
               },
             },
-          },
-        ],
-      };
+          ],
+        };
 
-      return index === 0
-        ? [rotationSummary, actionButtons]
-        : [
-            {
-              type: "divider",
-            },
-            rotationSummary,
-            actionButtons,
-          ];
-    });
+        return index === 0
+          ? [rotationSummary, actionButtons]
+          : [
+              {
+                type: "divider",
+              },
+              rotationSummary,
+              actionButtons,
+            ];
+      },
+    );
 
     const message = await client.chat.postEphemeral({
       channel: inputs.channel,

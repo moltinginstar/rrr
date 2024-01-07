@@ -1,11 +1,7 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-import {
-  daysOfWeek,
-  frequencies,
-  RotationScheduleType,
-  Schedule,
-} from "../datastores/rotation.ts";
-import { capitalize } from "../utils/index.ts";
+import { RotationScheduleType, Schedule } from "../datastores/rotation.ts";
+import { capitalize, formatTime } from "../utils/index.ts";
+import { daysOfWeek, frequencies } from "../consts/index.ts";
 
 const defaultSchedule: Schedule = {
   frequency: "daily",
@@ -47,7 +43,7 @@ export const formatSchedule = (schedule: Schedule) => {
       break;
   }
 
-  return `${summary} at ${schedule.time}`;
+  return `${summary} at ${formatTime(schedule.time)}`;
 };
 
 export const buildRotationForm = (
