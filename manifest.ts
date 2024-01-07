@@ -1,5 +1,8 @@
 import { Manifest } from "deno-slack-sdk/mod.ts";
-import { RotationDatastore } from "./datastores/rotation.ts";
+import {
+  RotationDatastore,
+  // RotationScheduleOnDaysType,
+} from "./datastores/rotation.ts";
 import { CreateRotationWorkflow } from "./workflows/create_rotation.ts";
 import { ListRotationsWorkflow } from "./workflows/list_rotations.ts";
 import { SendReminderWorkflow } from "./workflows/send_reminder.ts";
@@ -14,6 +17,10 @@ export default Manifest({
   description: "A round robin rotation app for pirates. Arrrgh!",
   icon: "assets/icon.png",
   datastores: [RotationDatastore],
+  types: [
+    // RotationScheduleType,
+    // RotationScheduleOnDaysType,
+  ],
   functions: [
     CreateRotationFunction,
     ListRotationsFunction,

@@ -31,8 +31,8 @@ CreateRotationWorkflow.addStep(
   {
     name: CreateRotationForm.outputs.name,
     channel: CreateRotationForm.outputs.channel,
-    time: CreateRotationForm.outputs.time,
     roster: CreateRotationForm.outputs.roster,
+    time: CreateRotationForm.outputs.time,
     frequency: {
       type: CreateRotationForm.outputs.frequency,
       repeats_every: CreateRotationForm.outputs.repeats_every,

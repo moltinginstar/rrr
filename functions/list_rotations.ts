@@ -43,12 +43,13 @@ export default SlackFunction(
           "type": "mrkdwn",
           "text":
             `*Name:* ${rotation.name}\n*Channel:* <#${rotation.channel}>\n*Schedule:* ${
-              // TODO
               formatSchedule({
-                time: "6:66 AM",
-                frequency: "daily",
-                repeats_every: 1,
-              })}\n*Roster:* ${
+                time: rotation.time,
+                frequency: rotation.frequency,
+                repeats_every: rotation.repeats_every,
+                on_days: rotation.on_days,
+              })
+            }\n*Roster:* ${
               rotation.roster.map((member: string) => `<@${member}>`).join(
                 ", ",
               )

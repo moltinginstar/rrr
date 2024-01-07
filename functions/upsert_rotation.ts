@@ -1,7 +1,7 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import { TriggerTypes } from "deno-slack-api/mod.ts";
 import { SendReminderWorkflow } from "../workflows/send_reminder.ts";
-import { RotationDatastore } from "../datastores/rotation.ts";
+import { RotationDatastore, Schedule } from "../datastores/rotation.ts";
 
 // TODO: Calculate correct start date as a UTC string given time of recurring event ("HH:mm") and schedule (see structure of inputs.frequency object)
 const computeStartTime = (time: string, _frequency: Record<string, string>) => {
@@ -42,6 +42,13 @@ export const UpsertRotationFunction = DefineFunction({
       frequency: {
         type: Schema.types.object,
         description: "Frequency",
+        // TODO
+        // properties: {
+        //   number: { type: "integer" },
+        //   title: { type: "string" },
+        //   body: { type: "string" },
+        //   changed_files: { type: "integer" },
+        // },
       },
     },
     required: ["name", "channel", "roster", "time", "frequency"],
@@ -115,7 +122,16 @@ export default SlackFunction(
     //   return { error: `Trigger could not be saved ${scheduledTrigger.error}.` };
     // }
 
-    const scheduledTrigger = { trigger: { id: Math.floor(Math.random() * 1000).toFixed() } };
+    const scheduledTrigger = {
+      trigger: { id: Math.floor(Math.random() * 1000).toFixed() },
+    };
+
+    console.log({
+      frequency: inputs.frequency.type,
+      repeats_every: inputs.frequency.repeats_every,
+      on_days: inputs.frequency.on_days,
+      time: inputs.time,
+    } as Schedule);
 
     const response = await client.apps.datastore.update<
       typeof RotationDatastore.definition
@@ -126,13 +142,18 @@ export default SlackFunction(
         channel: inputs.channel,
         name: inputs.name,
         roster: inputs.roster,
-        // TODO: null/undefined when creating, (current_queue - roster) when updating
-        current_queue: inputs.roster,
+        current_queue: inputs.roster, // TODO: null/undefined when creating, (current_queue - roster) when updating?
+        ...{
+          time: inputs.time,
+          frequency: inputs.frequency.type,
+          repeats_every: inputs.frequency.repeats_every,
+          on_days: inputs.frequency.on_days ?? [],
+        } as Schedule,
       },
     });
 
     if (!response.ok) {
-      return { error: `Failed to upsert rotation: ${response.error}.` };
+      return { error: `Failed to upsert rotation: ${response}.` };
     }
 
     return {

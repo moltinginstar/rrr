@@ -1,25 +1,5 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-
-export const frequencies = ["daily", "weekly", "monthly"] as const;
-export type Frequency = typeof frequencies[number];
-
-export const daysOfWeek = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-] as const;
-export type DayOfWeek = typeof daysOfWeek[number];
-
-export type Schedule = {
-  frequency: Frequency;
-  repeats_every: number;
-  on_days?: DayOfWeek[];
-  time: string;
-};
+import { Schedule, daysOfWeek, frequencies } from "../datastores/rotation.ts";
 
 const defaultSchedule: Schedule = {
   frequency: "daily",
@@ -362,8 +342,10 @@ export const CreateRotationFunction = DefineFunction({
     required: [
       "name",
       "channel",
+      "roster",
       "time",
       "frequency",
+      "repeats_every",
     ],
   },
 });
