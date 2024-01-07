@@ -81,10 +81,6 @@ export const RotationDatastore = DefineDatastore({
         type: Schema.slack.types.user_id,
       },
     },
-    // schedule: {
-    //   type: RotationScheduleType,
-    //   required: true,
-    // },
     time: {
       type: Schema.types.string,
       required: true,

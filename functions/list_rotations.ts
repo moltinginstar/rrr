@@ -1,6 +1,42 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import { RotationDatastore } from "../datastores/rotation.ts";
 import { formatSchedule } from "./create_rotation.ts";
+import { SlackAPIClient } from "deno-slack-sdk/deps.ts";
+import { DatastoreItem } from "deno-slack-api/types.ts";
+
+const deleteRotation = async (
+  inputs: { trigger_id: string },
+  client: SlackAPIClient,
+) => {
+  const response = await client.workflows.triggers.delete({
+    trigger_id: inputs.trigger_id,
+  });
+
+  if (!response.ok) {
+    return {
+      error: `Trigger could not be deleted: ${JSON.stringify(response)}.`,
+    };
+  }
+
+  const datastoreResponse = await client.apps.datastore.delete<
+    typeof RotationDatastore.definition
+  >({
+    datastore: RotationDatastore.name,
+    id: inputs.trigger_id,
+  });
+
+  if (!datastoreResponse.ok) {
+    return {
+      error: `Failed to delete rotation data: ${
+        JSON.stringify(datastoreResponse)
+      }.`,
+    };
+  }
+
+  return {
+    outputs: {},
+  };
+};
 
 export const ListRotationsFunction = DefineFunction({
   callback_id: "list_rotations_function",
@@ -22,21 +58,30 @@ export const ListRotationsFunction = DefineFunction({
 export default SlackFunction(
   ListRotationsFunction,
   async ({ inputs, client }) => {
-    const rotations = await client.apps.datastore.query<
-      typeof RotationDatastore.definition
-    >({
-      datastore: RotationDatastore.name,
-      expression: "#channel = :channel",
-      expression_attributes: { "#channel": "channel" },
-      expression_values: { ":channel": inputs.channel },
-      limit: 1000,
-    }); // TODO: pagination
+    const rotations: DatastoreItem<typeof RotationDatastore.definition>[] = [];
 
-    if (!rotations.ok) {
-      return { error: `Failed to fetch rotations: ${rotations.error}.` };
-    }
+    let cursor;
+    do {
+      const response = await client.apps.datastore.query<
+        typeof RotationDatastore.definition
+      >({
+        datastore: RotationDatastore.name,
+        expression: "#channel = :channel",
+        expression_attributes: { "#channel": "channel" },
+        expression_values: { ":channel": inputs.channel },
+        limit: 1000,
+      });
 
-    const rotationList = rotations.items.flatMap((rotation, index) => {
+      if (!response.ok) {
+        return { error: `Failed to fetch rotations: ${JSON.stringify(response)}.` };
+      }
+
+      rotations.concat(response.items);
+
+      cursor = response.response_metadata?.next_cursor;
+    } while (cursor);
+
+    const rotationList = rotations.flatMap((rotation, index) => {
       const rotationSummary = {
         "type": "section",
         "text": {
@@ -66,7 +111,7 @@ export default SlackFunction(
               "type": "plain_text",
               "text": "Edit",
             },
-            "action_id": "edit_rotation",
+            "action_id": `edit_rotation-${rotation.trigger_id}`,
           },
           {
             "type": "button",
@@ -75,7 +120,7 @@ export default SlackFunction(
               "text": "Delete",
             },
             "style": "danger",
-            "action_id": "delete_rotation",
+            "action_id": `delete_rotation-${rotation.trigger_id}`,
             "confirm": {
               "title": {
                 "type": "plain_text",
@@ -135,6 +180,30 @@ export default SlackFunction(
 
     return {
       completed: false,
+    };
+  },
+).addBlockActionsHandler(
+  /delete_rotation-(.*)/,
+  async ({ action, client }) => {
+    const triggerId = action.action_id.match(/delete_rotation-(.*)/)?.[1];
+    if (triggerId) {
+      const response = await deleteRotation({ trigger_id: triggerId }, client);
+      if (response.error) {
+        return response;
+      }
+    } else {
+      return {
+        error: "Could not find rotation to delete.",
+      }
+    }
+
+    return {
+      completed: true,
+      outputs: {
+        message: {
+          text: "Rotation deleted!",
+        },
+      },
     };
   },
 );

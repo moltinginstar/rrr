@@ -1,6 +1,5 @@
 import {
   DefineFunction,
-  // DefineProperty,
   Schema,
   SlackFunction,
 } from "deno-slack-sdk/mod.ts";
@@ -61,8 +60,8 @@ const computeStartTime = (
 };
 
 export const UpsertRotationFunction = DefineFunction({
-  title: "Create a scheduled trigger",
-  callback_id: "send_reminder_trigger",
+  title: "Create or update a scheduled trigger",
+  callback_id: "upsert_rotation",
   source_file: "functions/upsert_rotation.ts",
   input_parameters: {
     properties: {
@@ -84,17 +83,12 @@ export const UpsertRotationFunction = DefineFunction({
         },
         description: "The list of users in the rotation",
       },
-      // schedule: DefineProperty({
-      //   ...RotationScheduleType.definition,
-      //   description: "The schedule of the rotation",
-      // }),
       ...RotationScheduleType.definition.properties,
     },
     required: [
       "name",
       "channel",
       "roster",
-      // "schedule",
       ...RotationScheduleType.definition.required,
     ],
   },
@@ -205,7 +199,6 @@ export default SlackFunction(
         name: inputs.name,
         roster: inputs.roster,
         current_queue: inputs.roster, // TODO: null/undefined when creating, (current_queue - roster) when updating?
-        // ...inputs.schedule,
         frequency: inputs.frequency,
         time: inputs.time,
         repeats_every: inputs.repeats_every,
