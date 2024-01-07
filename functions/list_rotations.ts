@@ -4,6 +4,7 @@ import type { SlackAPIClient } from "deno-slack-sdk/deps.ts";
 import { RotationDatastore } from "../datastores/rotation.ts";
 import { formatSchedule } from "./open_rotation_form.ts";
 import { deleteRotation } from "./delete_rotations.ts";
+import { CreateRotationWorkflow } from "../workflows/create_rotation.ts";
 
 export const listRotations = async (
   inputs: { channel: string },
@@ -163,7 +164,7 @@ export default SlackFunction(
               type: "section",
               text: {
                 type: "mrkdwn",
-                text: `There are no rotations in <#${inputs.channel}>. Create one with \`/rrr\`!`,
+                text: `There are no rotations in <#${inputs.channel}>. Create one using the shortcut \`${CreateRotationWorkflow.definition.title}\`!`,
               },
             },
           ],
