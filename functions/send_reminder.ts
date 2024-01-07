@@ -142,7 +142,7 @@ export default SlackFunction(
               "type": "mrkdwn",
               "text": `It’s <@${
                 rotation.current_queue[0]
-              }>’s turn to be ${rotation.name.toLowerCase()}.`,
+              }>’s turn to be \`${rotation.name}\`.`,
             },
           },
         ],
@@ -157,7 +157,7 @@ export default SlackFunction(
         outputs: {},
       });
     } else {
-      // TODO: handle postpone and skip differently 
+      // TODO: handle postpone and skip differently
       const response = await client.chat.delete({
         channel: body.container.channel_id,
         ts: body.container.message_ts,

@@ -100,7 +100,7 @@ export default SlackFunction(
               rotation.roster.map((member: string) => `<@${member}>`).join(
                 ", ",
               )
-            }\n*Next up:* <@${rotation.current_queue[0]}>`,
+            }\n*Next up:* <@${rotation.current_queue[0] ?? rotation.roster[0]}>`,
         },
       };
 

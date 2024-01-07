@@ -53,15 +53,15 @@ export const formatSchedule = (schedule: Schedule) => {
 export const buildRotationForm = (
   // deno-lint-ignore no-explicit-any
   inputs: Record<string, any>,
-  privateMetadata: Schedule,
+  schedule: Schedule,
 ) => {
-  const scheduleSummary = formatSchedule(privateMetadata);
+  const scheduleSummary = formatSchedule(schedule);
 
   return {
     "type": "modal",
     "callback_id": "rotation_form",
     "external_id": "rotation_form_window7",
-    "private_metadata": JSON.stringify(privateMetadata),
+    "private_metadata": JSON.stringify({ schedule }),
     "title": {
       "type": "plain_text",
       "text": "Create rotation",
@@ -393,7 +393,7 @@ export default SlackFunction(
           interactivity_pointer: body.interactivity.interactivity_pointer,
           view: buildScheduleForm(
             body.view.private_metadata
-              ? JSON.parse(body.view.private_metadata)
+              ? JSON.parse(body.view.private_metadata).schedule
               : {
                 ...defaultSchedule,
                 frequency: body.view.state.values.frequency?.frequency_input
@@ -431,7 +431,7 @@ export default SlackFunction(
   ["rotation_form"],
   async ({ client, body, view }) => {
     const { values } = view.state;
-    const scheduleValues = JSON.parse(view.private_metadata ?? "{}");
+    const scheduleValues = JSON.parse(view.private_metadata ?? "{}").schedule;
 
     const complete = await client.functions.completeSuccess({
       function_execution_id: body.function_data.execution_id,
