@@ -8,5 +8,12 @@ export const formatTime = (time: Time, locale = "en-US") => {
   const date = new Date();
   date.setHours(hours, minutes);
 
-  return date.toLocaleTimeString(locale, { timeStyle: "short" });
+  const timestamp = Math.floor(date.getTime() / 1000);
+  const fallback = date.toLocaleTimeString(locale, {
+    hour: "numeric",
+    minute: "numeric",
+    timeZoneName: "short",
+  });
+
+  return `<!date^${timestamp}^{time}|${fallback}>`;
 };
