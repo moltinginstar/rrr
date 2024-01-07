@@ -1,6 +1,6 @@
 import { DefineWorkflow, Schema } from "deno-slack-sdk/mod.ts";
 import { OpenRotationFormFunction } from "../functions/open_rotation_form.ts";
-import { UpsertRotationFunction } from "../functions/upsert_rotation.ts";
+import { UpdateRotationFunction } from "../functions/update_rotation.ts";
 import { GetRotationFunction } from "../functions/get_rotation.ts";
 
 export const UpdateRotationWorkflow = DefineWorkflow({
@@ -45,7 +45,7 @@ const RotationForm = UpdateRotationWorkflow.addStep(
 );
 
 UpdateRotationWorkflow.addStep(
-  UpsertRotationFunction,
+  UpdateRotationFunction,
   {
     trigger_id: UpdateRotationWorkflow.inputs.trigger_id,
     name: RotationForm.outputs.name,

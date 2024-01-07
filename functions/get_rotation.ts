@@ -1,5 +1,8 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-import { RotationDatastore, RotationScheduleType } from "../datastores/rotation.ts";
+import {
+  RotationDatastore,
+  RotationScheduleType,
+} from "../datastores/rotation.ts";
 
 export const GetRotationFunction = DefineFunction({
   callback_id: "get_rotation_function",
@@ -14,7 +17,7 @@ export const GetRotationFunction = DefineFunction({
         type: Schema.types.string,
       },
     },
-    required: ["interactivity", "trigger_id"],
+    required: ["trigger_id"],
   },
   output_parameters: {
     properties: {
@@ -39,7 +42,6 @@ export const GetRotationFunction = DefineFunction({
       ...RotationScheduleType.definition.properties,
     },
     required: [
-      "interactivity",
       "name",
       "channel",
       "roster",

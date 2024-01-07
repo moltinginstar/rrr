@@ -422,7 +422,9 @@ export default SlackFunction(
         });
 
     if (!response.ok) {
-      return { error: `Failed to open schedule form: ${response.error}.` };
+      return {
+        error: `Failed to open schedule form: ${JSON.stringify(response)}.`,
+      };
     }
 
     return {
@@ -468,7 +470,7 @@ export default SlackFunction(
     if (!complete.ok) {
       await client.functions.completeError({
         function_execution_id: body.function_data.execution_id,
-        error: `Error completing function: ${complete}.`,
+        error: `Error completing function: ${JSON.stringify(complete)}.`,
       });
     }
   },

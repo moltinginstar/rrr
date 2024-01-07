@@ -12,7 +12,8 @@ import { ListRotationsWorkflow } from "./workflows/list_rotations.ts";
 import { SendReminderWorkflow } from "./workflows/send_reminder.ts";
 
 import { OpenRotationFormFunction } from "./functions/open_rotation_form.ts";
-import { UpsertRotationFunction } from "./functions/upsert_rotation.ts";
+import { CreateRotationFunction } from "./functions/create_rotation.ts";
+import { UpdateRotationFunction } from "./functions/update_rotation.ts";
 import { SendReminderFunction } from "./functions/send_reminder.ts";
 import { GetRotationFunction } from "./functions/get_rotation.ts";
 import { ListRotationsFunction } from "./functions/list_rotations.ts";
@@ -29,7 +30,8 @@ export default Manifest({
   ],
   functions: [
     OpenRotationFormFunction,
-    UpsertRotationFunction,
+    CreateRotationFunction,
+    UpdateRotationFunction,
     SendReminderFunction,
     RotateFunction,
     GetRotationFunction,
