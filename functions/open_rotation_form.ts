@@ -55,12 +55,10 @@ export const buildRotationForm = (
   inputs: Record<string, any>,
   schedule: Schedule = defaultSchedule,
 ) => {
-  const scheduleSummary = formatSchedule(schedule);
-
   return {
     "type": "modal",
     "callback_id": "rotation_form",
-    "external_id": "rotation_form_window7",
+    "external_id": "rotation_form_window9",
     "private_metadata": JSON.stringify({ schedule }),
     "title": {
       "type": "plain_text",
@@ -89,6 +87,7 @@ export const buildRotationForm = (
             "text": "Team meeting facilitator",
           },
           "action_id": "rotation_name_input",
+          "initial_value": inputs.name,
         },
       },
       {
@@ -122,6 +121,7 @@ export const buildRotationForm = (
         "element": {
           "type": "multi_users_select",
           "action_id": "roster_input",
+          "initial_users": inputs.roster,
         },
       },
       {
@@ -132,7 +132,7 @@ export const buildRotationForm = (
         "block_id": "schedule",
         "text": {
           "type": "mrkdwn",
-          "text": `*Schedule:* ${scheduleSummary}`,
+          "text": `*Schedule:* ${formatSchedule(schedule)}`,
         },
         "accessory": {
           "type": "button",
@@ -283,7 +283,7 @@ export const buildScheduleForm = (schedule: Schedule = defaultSchedule) => {
   return {
     "type": "modal",
     "callback_id": "schedule_form",
-    "external_id": "schedule_form_window7",
+    "external_id": "schedule_form_window9",
     "title": {
       "type": "plain_text",
       "text": "Edit schedule",
@@ -408,7 +408,7 @@ export default SlackFunction(
       await (action.action_id === "edit_schedule"
         ? client.views.push
         : client.views.update)({
-          external_id: "schedule_form_window7",
+          external_id: "schedule_form_window9",
           interactivity_pointer: body.interactivity.interactivity_pointer,
           view: buildScheduleForm(
             body.view.private_metadata
@@ -435,7 +435,7 @@ export default SlackFunction(
     const { values } = view.state;
 
     await client.views.update({
-      external_id: "rotation_form_window7",
+      external_id: "rotation_form_window9",
       view: buildRotationForm(inputs, {
         frequency: values.frequency.frequency_input.selected_option.value,
         time: values.timepicker.timepicker_input.selected_time,

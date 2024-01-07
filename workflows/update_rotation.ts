@@ -47,6 +47,7 @@ const RotationForm = UpdateRotationWorkflow.addStep(
 UpdateRotationWorkflow.addStep(
   UpsertRotationFunction,
   {
+    trigger_id: UpdateRotationWorkflow.inputs.trigger_id,
     name: RotationForm.outputs.name,
     channel: RotationForm.outputs.channel,
     roster: RotationForm.outputs.roster,
