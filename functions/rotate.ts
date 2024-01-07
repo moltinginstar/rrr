@@ -30,7 +30,9 @@ export default SlackFunction(RotateFunction, async ({ inputs, client }) => {
   const rotation = rotationsResponse.item;
 
   if (!rotationsResponse.ok || !rotation) {
-    return { error: `Failed to fetch rotation: ${rotationsResponse.error}.` };
+    return {
+      error: `Failed to fetch rotation: ${JSON.stringify(rotationsResponse)}.`,
+    };
   }
 
   let newQueue;
@@ -61,7 +63,7 @@ export default SlackFunction(RotateFunction, async ({ inputs, client }) => {
   });
 
   if (!response.ok) {
-    return { error: `Failed to rotate: ${response.error}.` };
+    return { error: `Failed to rotate: ${JSON.stringify(response)}.` };
   }
 
   return {

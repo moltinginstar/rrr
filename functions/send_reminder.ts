@@ -49,7 +49,11 @@ export default SlackFunction(
     const rotation = rotationsResponse.item;
 
     if (!rotationsResponse.ok || !rotation) {
-      return { error: `Failed to fetch rotation: ${rotationsResponse.error}.` };
+      return {
+        error: `Failed to fetch rotation: ${JSON.stringify(
+          rotationsResponse,
+        )}.`,
+      };
     }
 
     const content = buildReminderContent(rotation);
@@ -121,7 +125,7 @@ export default SlackFunction(
     });
 
     if (!message.ok) {
-      return { error: `Failed to send reminder: ${message.error}.` };
+      return { error: `Failed to send reminder: ${JSON.stringify(message)}.` };
     }
 
     if (

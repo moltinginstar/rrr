@@ -170,7 +170,7 @@ export default SlackFunction(
     });
 
     if (!message.ok) {
-      return { error: `Failed to list rotations: ${message.error}.` };
+      return { error: `Failed to list rotations: ${JSON.stringify(message)}.` };
     }
 
     return {
