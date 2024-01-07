@@ -9,6 +9,7 @@ import {
 import { CreateRotationWorkflow } from "./workflows/create_rotation.ts";
 import { UpdateRotationWorkflow } from "./workflows/update_rotation.ts";
 import { ListRotationsWorkflow } from "./workflows/list_rotations.ts";
+import { DeleteRotationWorkflow } from "./workflows/delete_rotation.ts";
 import { SendReminderWorkflow } from "./workflows/send_reminder.ts";
 import { RemoveUserFromRotationWorkflow } from "./workflows/remove_user_from_rotation.ts";
 
@@ -16,6 +17,7 @@ import { OpenRotationFormFunction } from "./functions/open_rotation_form.ts";
 import { CreateRotationFunction } from "./functions/create_rotation.ts";
 import { UpdateRotationFunction } from "./functions/update_rotation.ts";
 import { GetRotationFunction } from "./functions/get_rotation.ts";
+import { DeleteRotationFunction } from "./functions/delete_rotation.ts";
 import { ListRotationsFunction } from "./functions/list_rotations.ts";
 import { RotateFunction } from "./functions/rotate.ts";
 import { SendReminderFunction } from "./functions/send_reminder.ts";
@@ -26,15 +28,13 @@ export default Manifest({
   description: "A round robin rotation app for pirates. Arrrgh!",
   icon: "assets/icon.png",
   datastores: [RotationDatastore],
-  types: [
-    IncludedDaysOfWeekType,
-    RotationScheduleType,
-  ],
+  types: [IncludedDaysOfWeekType, RotationScheduleType],
   functions: [
     OpenRotationFormFunction,
     CreateRotationFunction,
     UpdateRotationFunction,
     GetRotationFunction,
+    DeleteRotationFunction,
     ListRotationsFunction,
     RotateFunction,
     SendReminderFunction,
@@ -43,6 +43,7 @@ export default Manifest({
   workflows: [
     CreateRotationWorkflow,
     UpdateRotationWorkflow,
+    DeleteRotationWorkflow,
     ListRotationsWorkflow,
     SendReminderWorkflow,
     RemoveUserFromRotationWorkflow,

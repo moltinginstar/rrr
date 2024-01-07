@@ -2,8 +2,8 @@ import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import { TriggerEventTypes, TriggerTypes } from "deno-slack-api/mod.ts";
 import { SendReminderWorkflow } from "../workflows/send_reminder.ts";
 import {
-  DayOfWeek,
-  Frequency,
+  type DayOfWeek,
+  type Frequency,
   RotationDatastore,
   RotationScheduleType,
 } from "../datastores/rotation.ts";
@@ -120,7 +120,7 @@ export default SlackFunction(
       };
     }
 
-    const triggerResponse = await client.workflows.triggers.create<
+    const userLeavesResponse = await client.workflows.triggers.create<
       typeof RemoveUserFromRotationWorkflow.definition
     >({
       type: TriggerTypes.Event,
@@ -140,9 +140,11 @@ export default SlackFunction(
       },
     });
 
-    if (!triggerResponse.ok) {
+    if (!userLeavesResponse.ok) {
       return {
-        error: `Failed to create trigger: ${JSON.stringify(triggerResponse)}.`,
+        error: `Failed to create trigger: ${JSON.stringify(
+          userLeavesResponse,
+        )}.`,
       };
     }
 
@@ -159,7 +161,7 @@ export default SlackFunction(
         time: inputs.time,
         repeats_every: inputs.repeats_every,
         on_days: inputs.on_days,
-        trigger_ids: [triggerResponse.trigger.id],
+        trigger_ids: [userLeavesResponse.trigger.id],
       },
     });
 
