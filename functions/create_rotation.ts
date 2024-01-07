@@ -1,18 +1,83 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 
+export const frequencies = ["daily", "weekly", "monthly"] as const;
+export type Frequency = typeof frequencies[number];
+
+export const daysOfWeek = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+] as const;
+export type DayOfWeek = typeof daysOfWeek[number];
+
+export type Schedule = {
+  frequency: Frequency;
+  repeats_every: number;
+  on_days?: DayOfWeek[];
+  time: string;
+};
+
+const defaultSchedule: Schedule = {
+  frequency: "daily",
+  time: "09:00",
+  repeats_every: 1,
+};
+
+export const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+export const formatSchedule = (schedule: Schedule) => {
+  let summary = "";
+  switch (schedule.frequency) {
+    case "daily":
+      if (schedule.repeats_every === 1) {
+        summary = "Daily";
+      } else if (schedule.repeats_every === 2) {
+        summary = "Every other day";
+      } else {
+        summary = `Every ${schedule.repeats_every} days`;
+      }
+      break;
+    case "weekly":
+      if (schedule.repeats_every === 1) {
+        summary = "Weekly";
+      } else if (schedule.repeats_every === 2) {
+        summary = "Every other week";
+      } else {
+        summary = `Every ${schedule.repeats_every} weeks`;
+      }
+      summary += ` on ${schedule.on_days!.join(", ")}`;
+      break;
+    case "monthly":
+      if (schedule.repeats_every === 1) {
+        summary = "Monthly";
+      } else if (schedule.repeats_every === 2) {
+        summary = "Every other month";
+      } else {
+        summary = `Every ${schedule.repeats_every} months`;
+      }
+      summary += ` on ${schedule.on_days!.join(", ")}`;
+      break;
+  }
+
+  return `${summary} at ${schedule.time}`;
+};
+
 export const buildRotationForm = (
   // deno-lint-ignore no-explicit-any
   inputs: Record<string, any>,
   // deno-lint-ignore no-explicit-any
   privateMetadata: Record<string, any>,
 ) => {
-  const scheduleSummary =
-    `${privateMetadata.time} ${privateMetadata.frequency}`;
+  const scheduleSummary = formatSchedule(privateMetadata as any);
 
   return {
     "type": "modal",
     "callback_id": "rotation_form",
-    "external_id": "rotation_form_view",
+    "external_id": "rotation_form_window4",
     "private_metadata": JSON.stringify(privateMetadata),
     "title": {
       "type": "plain_text",
@@ -99,9 +164,7 @@ export const buildRotationForm = (
   };
 };
 
-export const buildScheduleForm = (
-  frequency: "daily" | "weekly" | "monthly" = "daily",
-) => {
+export const buildScheduleForm = (schedule: Schedule = defaultSchedule) => {
   const timepicker = {
     "type": "input",
     "block_id": "timepicker",
@@ -112,7 +175,7 @@ export const buildScheduleForm = (
     "element": {
       "type": "timepicker",
       "action_id": "timepicker_input",
-      "initial_time": "09:00",
+      "initial_time": schedule.time,
       "placeholder": {
         "type": "plain_text",
         "text": "Select time",
@@ -131,7 +194,7 @@ export const buildScheduleForm = (
       "type": "number_input",
       "is_decimal_allowed": false,
       "min_value": "1",
-      "initial_value": "1",
+      "initial_value": schedule.repeats_every.toString(),
       "action_id": "every_input",
     },
   };
@@ -146,22 +209,22 @@ export const buildScheduleForm = (
     "element": {
       "type": "multi_static_select",
       "action_id": "included_days_input",
-      "initial_options": [{
+      "initial_options": schedule.on_days?.map((day) => ({
         "text": {
           "type": "plain_text",
-          "text": "Monday",
+          "text": day,
         },
-        "value": "Monday",
-      }],
-      "options": [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ].map((day) => ({
+        "value": day,
+      })) ?? [
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Monday",
+          },
+          "value": "Monday",
+        },
+      ],
+      "options": daysOfWeek.map((day) => ({
         "text": {
           "type": "plain_text",
           "text": day,
@@ -172,9 +235,10 @@ export const buildScheduleForm = (
   };
 
   let blocks: object[];
-  switch (frequency) {
+  switch (schedule.frequency) {
     case "daily":
       blocks = [
+        every,
         timepicker,
       ];
       break;
@@ -200,7 +264,7 @@ export const buildScheduleForm = (
   return {
     "type": "modal",
     "callback_id": "schedule_form",
-    "external_id": "schedule_form_view",
+    "external_id": "schedule_form_window4",
     "title": {
       "type": "plain_text",
       "text": "Edit schedule",
@@ -228,33 +292,17 @@ export const buildScheduleForm = (
           "initial_option": {
             "text": {
               "type": "plain_text",
-              "text": "Daily",
+              "text": capitalize(schedule.frequency),
             },
-            "value": "daily",
+            "value": schedule.frequency,
           },
-          "options": [
-            {
-              "text": {
-                "type": "plain_text",
-                "text": "Daily",
-              },
-              "value": "daily",
+          "options": frequencies.map((frequency) => ({
+            "text": {
+              "type": "plain_text",
+              "text": capitalize(frequency),
             },
-            {
-              "text": {
-                "type": "plain_text",
-                "text": "Weekly",
-              },
-              "value": "weekly",
-            },
-            {
-              "text": {
-                "type": "plain_text",
-                "text": "Monthly",
-              },
-              "value": "monthly",
-            },
-          ],
+            "value": frequency,
+          })),
         },
       },
       ...blocks,
@@ -297,7 +345,7 @@ export const CreateRotationFunction = DefineFunction({
       },
       frequency: {
         type: Schema.types.string,
-        enum: ["daily", "weekly", "monthly"],
+        enum: frequencies,
       },
       repeats_every: {
         type: Schema.types.number,
@@ -306,15 +354,7 @@ export const CreateRotationFunction = DefineFunction({
         type: Schema.types.array,
         items: {
           type: Schema.types.string,
-          enum: [
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-            "Sunday",
-          ],
+          enum: daysOfWeek,
         },
       },
     },
@@ -332,10 +372,7 @@ export default SlackFunction(
   async ({ inputs, client }) => {
     await client.views.open({
       interactivity_pointer: inputs.interactivity.interactivity_pointer,
-      view: buildRotationForm(inputs, {
-        frequency: "daily",
-        time: "09:00",
-      }),
+      view: buildRotationForm(inputs, defaultSchedule),
     });
 
     return {
@@ -345,16 +382,26 @@ export default SlackFunction(
 ).addBlockActionsHandler(
   ["edit_schedule", "frequency_input"],
   async ({ action, body, client }) => {
-    await (action.action_id === "edit_schedule"
-      ? client.views.push
-      : client.views.update)({
-        external_id: "schedule_form_view",
-        interactivity_pointer: body.interactivity.interactivity_pointer,
-        view: buildScheduleForm(
-          body.view.state.values.frequency?.frequency_input.selected_option
-            .value,
-        ),
-      });
+    const response =
+      await (action.action_id === "edit_schedule"
+        ? client.views.push
+        : client.views.update)({
+          external_id: "schedule_form_window4",
+          interactivity_pointer: body.interactivity.interactivity_pointer,
+          view: buildScheduleForm(
+            body.view.private_metadata
+              ? JSON.parse(body.view.private_metadata)
+              : {
+                ...defaultSchedule,
+                frequency: body.view.state.values.frequency?.frequency_input
+                  .selected_option.value,
+              },
+          ),
+        });
+
+    if (!response.ok) {
+      return { error: `Failed to open schedule form: ${response.error}.` };
+    }
 
     return {
       completed: false,
@@ -366,11 +413,11 @@ export default SlackFunction(
     const { values } = view.state;
 
     await client.views.update({
-      external_id: "rotation_form_view",
+      external_id: "rotation_form_window4",
       view: buildRotationForm(inputs, {
         frequency: values.frequency.frequency_input.selected_option.value,
         time: values.timepicker.timepicker_input.selected_time,
-        repeats_every: values.every?.every_input.value ??
+        repeats_every: values.every?.every_input.value &&
           parseInt(values.every?.every_input.value),
         on_days: values.included_days
           ?.included_days_input
