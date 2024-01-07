@@ -45,7 +45,7 @@ CreateRotationWorkflow.addStep(
   Schema.slack.functions.SendEphemeralMessage,
   {
     channel_id: CreateRotationForm.outputs.channel,
-    user_id: CreateRotationWorkflow.inputs.interactivity.interactor.trigger_id,
+    user_id: CreateRotationWorkflow.inputs.interactivity.interactor.id,
     message:
       `The rotation \`${CreateRotationForm.outputs.name}\` was successfully created! :white_check_mark:`,
   },
