@@ -73,7 +73,9 @@ export default SlackFunction(
       });
 
       if (!response.ok) {
-        return { error: `Failed to fetch rotations: ${JSON.stringify(response)}.` };
+        return {
+          error: `Failed to fetch rotations: ${JSON.stringify(response)}.`,
+        };
       }
 
       rotations.concat(response.items);
@@ -194,7 +196,7 @@ export default SlackFunction(
     } else {
       return {
         error: "Could not find rotation to delete.",
-      }
+      };
     }
 
     return {

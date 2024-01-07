@@ -1,8 +1,4 @@
-import {
-  DefineFunction,
-  Schema,
-  SlackFunction,
-} from "deno-slack-sdk/mod.ts";
+import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import { TriggerTypes } from "deno-slack-api/mod.ts";
 import { SendReminderWorkflow } from "../workflows/send_reminder.ts";
 import {
