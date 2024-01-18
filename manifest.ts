@@ -1,3 +1,9 @@
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
+import localizedFormat from "dayjs/plugin/localizedFormat.js";
+import advancedFormat from "dayjs/plugin/advancedFormat.js";
+
 import { Manifest } from "deno-slack-sdk/mod.ts";
 
 import {
@@ -22,6 +28,11 @@ import { ListRotationsFunction } from "./functions/list_rotations.ts";
 import { RotateFunction } from "./functions/rotate.ts";
 import { SendReminderFunction } from "./functions/send_reminder.ts";
 import { RemoveUserFromRotationFunction } from "./functions/remove_user_from_rotation.ts";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(localizedFormat);
+dayjs.extend(advancedFormat);
 
 export default Manifest({
   name: "rrr",
@@ -68,5 +79,6 @@ export default Manifest({
     "groups:read",
     "im:read",
     "mpim:read",
+    "users:read",
   ],
 });

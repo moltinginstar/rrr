@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 import { SendReminderWorkflow } from "../workflows/send_reminder.ts";
 import { Schedule } from "../datastores/rotation.ts";
 import { ScheduledTrigger } from "deno-slack-api/typed-method-types/workflows/triggers/scheduled.ts";
@@ -39,39 +41,51 @@ export const jsDaysOfWeek = [daysOfWeek[6], ...daysOfWeek.slice(0, 6)];
 
 export const computeStartTime = (
   time: Time,
+  timezone: string,
   frequency: ScheduledTriggerFrequency,
 ) => {
-  const now = new Date();
+  const now = dayjs.tz(new Date(), timezone);
   const [hours, minutes] = time.split(":").map(Number);
 
-  const startDate = new Date(now);
-  startDate.setHours(hours, minutes);
+  let startDate = dayjs
+    .tz(now, timezone)
+    .startOf("d")
+    .hour(hours)
+    .minute(minutes);
 
   if (startDate <= now) {
-    if (frequency.type === "daily") {
-      startDate.setDate(now.getDate() + 1);
-    } else if (frequency.type === "weekly") {
-      const sortedDays = frequency
-        .on_days!.map(
-          (day) => (jsDaysOfWeek.indexOf(day) - now.getDay() + 7) % 7,
-        )
-        .sort((a, b) => a - b);
-      const daysUntilNextOccurrence = sortedDays[0];
-      startDate.setDate(now.getDate() + daysUntilNextOccurrence);
-    } else if (frequency.type === "monthly") {
-      const sortedDays = frequency
-        .on_days!.map(
-          (day) => (jsDaysOfWeek.indexOf(day) - now.getDay() + 7) % 7,
-        )
-        .sort((a, b) => a - b);
-      const daysUntilNextOccurrence = sortedDays[0];
-      startDate.setDate(
-        now.getDate() +
-          daysUntilNextOccurrence +
-          (daysUntilNextOccurrence <= 0 ? 30 : 0),
-      );
-    } else {
-      throw new Error("Invalid frequency type");
+    switch (frequency.type) {
+      case "daily":
+        startDate = startDate.date(now.date() + 1);
+        break;
+      case "weekly": {
+        const sortedDays = frequency
+          .on_days!.map(
+            (day) => (jsDaysOfWeek.indexOf(day) - now.day() + 7) % 7,
+          )
+          .sort((a, b) => a - b);
+        const daysUntilNextOccurrence = sortedDays[0];
+        startDate = startDate.date(now.date() + daysUntilNextOccurrence);
+        break;
+      }
+      case "monthly": {
+        const sortedDays = frequency
+          .on_days!.map(
+            (day) => (jsDaysOfWeek.indexOf(day) - now.day() + 7) % 7,
+          )
+          .sort((a, b) => a - b);
+        const daysUntilNextOccurrence = sortedDays[0];
+        startDate = startDate.date(
+          now.date() +
+            daysUntilNextOccurrence +
+            (daysUntilNextOccurrence <= 0 ? 30 : 0),
+        );
+        break;
+      }
+      default:
+        throw new RangeError(
+          'Frequency must be "daily", "weekly", or "monthly".',
+        );
     }
   }
 

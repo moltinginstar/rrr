@@ -57,6 +57,7 @@ export default SlackFunction(
       frequency: inputs.frequency as Frequency,
       repeats_every: inputs.repeats_every,
       time: inputs.time as Time,
+      timezone: inputs.timezone,
       on_days: inputs.on_days as DayOfWeek[] | undefined,
     });
 
@@ -68,14 +69,19 @@ export default SlackFunction(
       workflow: `#/workflows/${SendReminderWorkflow.definition.callback_id}`,
       inputs: {
         trigger_id: {
-          value: "-", // TODO: come up with a more elegant way to handle this
+          value: "-", // Inelegant but works
         },
         mode: {
           value: "skip",
         },
       },
       schedule: {
-        start_time: computeStartTime(inputs.time as Time, triggerFrequency),
+        start_time: computeStartTime(
+          inputs.time as Time,
+          inputs.timezone,
+          triggerFrequency,
+        ),
+        timezone: inputs.timezone,
         frequency: triggerFrequency,
       },
     });
@@ -106,7 +112,12 @@ export default SlackFunction(
         },
       },
       schedule: {
-        start_time: computeStartTime(inputs.time as Time, triggerFrequency),
+        start_time: computeStartTime(
+          inputs.time as Time,
+          inputs.timezone,
+          triggerFrequency,
+        ),
+        timezone: inputs.timezone,
         frequency: triggerFrequency,
       },
     });
@@ -158,6 +169,7 @@ export default SlackFunction(
         roster: inputs.roster,
         frequency: inputs.frequency,
         time: inputs.time,
+        timezone: inputs.timezone,
         repeats_every: inputs.repeats_every,
         on_days: inputs.on_days,
         trigger_ids: [userLeavesResponse.trigger.id],

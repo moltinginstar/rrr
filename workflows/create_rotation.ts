@@ -28,6 +28,7 @@ CreateRotationWorkflow.addStep(CreateRotationFunction, {
   channel: RotationForm.outputs.channel,
   roster: RotationForm.outputs.roster,
   time: RotationForm.outputs.time,
+  timezone: RotationForm.outputs.timezone,
   frequency: RotationForm.outputs.frequency,
   repeats_every: RotationForm.outputs.repeats_every,
   on_days: RotationForm.outputs.on_days,

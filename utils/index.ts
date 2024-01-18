@@ -1,19 +1,22 @@
+import dayjs from "dayjs";
+
 import type { Time } from "../types/index.ts";
 
 export const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-export const formatTime = (time: Time, locale = "en-US") => {
+// TODO: dayjs not working in production
+export const formatTime = (time: Time, timezone: string) => {
   const [hours, minutes] = time.split(":").map(Number);
 
-  const date = new Date();
-  date.setHours(hours, minutes);
+  const date = dayjs
+    .tz(new Date(), timezone)
+    .startOf("d")
+    .hour(hours)
+    .minute(minutes);
 
-  const timestamp = Math.floor(date.getTime() / 1000);
-  const fallback = date.toLocaleTimeString(locale, {
-    hour: "numeric",
-    minute: "numeric",
-    timeZoneName: "short",
-  });
+  return date.format("LT z");
+};
 
-  return `<!date^${timestamp}^{time}|${fallback}>`;
+export const timezoneToParts = (timezone: string) => {
+  return timezone.replace("_", " ").split("/", 2);
 };

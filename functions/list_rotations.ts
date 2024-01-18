@@ -81,6 +81,7 @@ export default SlackFunction(
               rotation.channel
             }>\n*Schedule:* ${formatSchedule({
               time: rotation.time,
+              timezone: rotation.timezone,
               frequency: rotation.frequency,
               repeats_every: rotation.repeats_every,
               on_days: rotation.on_days,

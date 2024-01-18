@@ -73,6 +73,7 @@ export default SlackFunction(
         channel: response.item.channel,
         roster: response.item.roster,
         time: response.item.time,
+        timezone: response.item.timezone,
         frequency: response.item.frequency,
         repeats_every: response.item.repeats_every,
         on_days: response.item.on_days,

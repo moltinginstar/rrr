@@ -18,6 +18,9 @@ export const RotationScheduleType = DefineType({
     time: {
       type: Schema.types.string,
     },
+    timezone: {
+      type: Schema.types.string,
+    },
     frequency: {
       type: Schema.types.string,
       enum: frequencies,
@@ -29,7 +32,7 @@ export const RotationScheduleType = DefineType({
       type: IncludedDaysOfWeekType,
     },
   },
-  required: ["time", "frequency", "repeats_every"],
+  required: ["time", "timezone", "frequency", "repeats_every"],
 });
 
 export type Schedule = {
@@ -37,6 +40,7 @@ export type Schedule = {
   repeats_every: number;
   on_days?: DayOfWeek[];
   time: Time;
+  timezone: string;
 };
 
 export const RotationDatastore = DefineDatastore({
@@ -57,19 +61,23 @@ export const RotationDatastore = DefineDatastore({
     },
     roster: {
       type: Schema.types.array,
-      required: true,
       items: {
         type: Schema.slack.types.user_id,
       },
+      required: true,
     },
     current_queue: {
       type: Schema.types.array,
-      required: false,
       items: {
         type: Schema.slack.types.user_id,
       },
+      required: false,
     },
     time: {
+      type: Schema.types.string,
+      required: true,
+    },
+    timezone: {
       type: Schema.types.string,
       required: true,
     },
@@ -88,13 +96,14 @@ export const RotationDatastore = DefineDatastore({
         type: Schema.types.string,
         enum: daysOfWeek,
       },
+      required: false,
     },
     trigger_ids: {
       type: Schema.types.array,
-      required: false,
       items: {
         type: Schema.types.string,
       },
+      required: false,
     },
     last_channel: {
       type: Schema.slack.types.channel_id,
