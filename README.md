@@ -84,11 +84,9 @@ And that’s it! You can now use the app in your workspace. For more information
 
 ### Gallery
 
-![Create rotation view](assets/create_rotation.png)
-
-![Edit schedule view](assets/edit_schedule.png)
-
-![Reminder view](assets/reminder.png)
+| Create rotation view                                | Edit schedule view                              | Reminder view                         |
+| --------------------------------------------------- | ----------------------------------------------- | ------------------------------------- |
+| ![Create rotation view](assets/create_rotation.png) | ![Edit schedule view](assets/edit_schedule.png) | ![Reminder view](assets/reminder.png) |
 
 ### Pricing
 
