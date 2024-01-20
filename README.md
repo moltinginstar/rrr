@@ -44,6 +44,12 @@ That said, you still need to be on a paid Slack plan to use this app. If you are
    curl -fsSL https://downloads.slack-edge.com/slack-cli/install.sh | bash # or zsh
    ```
 
+   macOS (Homebrew):
+
+   ```sh
+   brew install --cask slack-cli
+   ```
+
    Windows (PowerShell):
 
    ```ps
