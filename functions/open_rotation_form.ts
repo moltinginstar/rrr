@@ -217,7 +217,7 @@ export const buildRotationForm = (
   return {
     type: "modal",
     callback_id: "rotation_form",
-    external_id: "rotation_form_window19",
+    external_id: "rotation_form_window",
     private_metadata: JSON.stringify({ schedule }),
     title: {
       type: "plain_text",
@@ -385,7 +385,7 @@ export const buildScheduleForm = (schedule: Schedule = defaultSchedule) => {
   return {
     type: "modal",
     callback_id: "schedule_form",
-    external_id: "schedule_form_window19",
+    external_id: "schedule_form_window",
     title: {
       type: "plain_text",
       text: "Edit schedule",
@@ -537,7 +537,7 @@ export default SlackFunction(
       const response = await (action.action_id === "edit_schedule"
         ? client.views.push
         : client.views.update)({
-        external_id: "schedule_form_window19", // TODO: rename
+        external_id: "schedule_form_window",
         interactivity_pointer: body.interactivity.interactivity_pointer,
         view: buildScheduleForm(
           body.view.private_metadata
@@ -568,7 +568,7 @@ export default SlackFunction(
       const { values } = view.state;
 
       await client.views.update({
-        external_id: "rotation_form_window19",
+        external_id: "rotation_form_window",
         view: buildRotationForm(inputs, {
           frequency: values.frequency.frequency_input.selected_option.value,
           time: values.timepicker.timepicker_input.selected_time,
