@@ -3,7 +3,7 @@ import type { DatastoreItem } from "deno-slack-api/types.ts";
 import { RotationDatastore } from "../datastores/rotation.ts";
 
 export const sendReminderTriggerUrl =
-  "https://slack.com/shortcuts/Ft06C9LF4VJ7/866bbe20949ff3208721dae7949ba7eb";
+  "https://slack.com/shortcuts/xxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 export const buildReminderContent = (
   rotation: DatastoreItem<typeof RotationDatastore.definition>,

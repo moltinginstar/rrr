@@ -61,6 +61,12 @@ export default SlackFunction(
       on_days: inputs.on_days as DayOfWeek[] | undefined,
     });
 
+    const startTime = computeStartTime(
+      inputs.time as Time,
+      inputs.timezone,
+      triggerFrequency,
+    );
+
     let scheduledTrigger = await client.workflows.triggers.create<
       typeof SendReminderWorkflow.definition
     >({
@@ -76,11 +82,7 @@ export default SlackFunction(
         },
       },
       schedule: {
-        start_time: computeStartTime(
-          inputs.time as Time,
-          inputs.timezone,
-          triggerFrequency,
-        ),
+        start_time: startTime,
         timezone: inputs.timezone,
         frequency: triggerFrequency,
       },
@@ -112,11 +114,7 @@ export default SlackFunction(
         },
       },
       schedule: {
-        start_time: computeStartTime(
-          inputs.time as Time,
-          inputs.timezone,
-          triggerFrequency,
-        ),
+        start_time: startTime,
         timezone: inputs.timezone,
         frequency: triggerFrequency,
       },

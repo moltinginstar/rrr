@@ -7,7 +7,7 @@ import { deleteRotation } from "./delete_rotations.ts";
 import { CreateRotationWorkflow } from "../workflows/create_rotation.ts";
 
 export const updateReminderTriggerUrl =
-  "https://slack.com/shortcuts/Ft068EGKG6JG/996a9ebe87ac264367856f92ec06dcf9";
+  "https://slack.com/shortcuts/xxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 export const listRotations = async (
   inputs: { channel: string },
