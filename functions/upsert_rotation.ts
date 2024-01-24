@@ -1,9 +1,9 @@
-import dayjs from "dayjs";
+import { datetime } from "ptera/mod.ts";
 
 import { SendReminderWorkflow } from "../workflows/send_reminder.ts";
 import { Schedule } from "../datastores/rotation.ts";
 import { ScheduledTrigger } from "deno-slack-api/typed-method-types/workflows/triggers/scheduled.ts";
-import { daysOfWeek } from "../consts/index.ts";
+import { jsDayOfWeekIndices } from "../consts/index.ts";
 import type { DayOfWeek, Frequency, Time } from "../types/index.ts";
 
 export type ScheduledTriggerFrequency = Extract<
@@ -37,56 +37,68 @@ export const getTriggerFrequency = (inputs: Schedule) => {
   return triggerFrequency;
 };
 
-export const jsDaysOfWeek = [daysOfWeek[6], ...daysOfWeek.slice(0, 6)];
+const getDaysUntilNextOccurrence = (
+  daysOfWeek: DayOfWeek[],
+  jsCurrentDayOfWeek: number,
+  includeCurrentDayOfWeek = false,
+) => {
+  const offset = includeCurrentDayOfWeek ? 0 : 7;
+  const sortedDays = daysOfWeek
+    .map(
+      (day) => (jsDayOfWeekIndices[day] - jsCurrentDayOfWeek + 7) % 7 || offset,
+    )
+    .sort((a, b) => a - b);
 
+  return sortedDays[0];
+};
+
+// TODO: PDT starts on 2024-03-12 2:00 AM PST, but Ptera thinks it starts at 7:00 AM PST.
+// TODO: AM/PM are swapped for noon and midnight.
 export const computeStartTime = (
   time: Time,
   timezone: string,
   frequency: ScheduledTriggerFrequency,
 ) => {
-  const now = dayjs.tz(new Date(), timezone);
   const [hours, minutes] = time.split(":").map(Number);
 
-  let startDate = dayjs
-    .tz(now, timezone)
-    .startOf("d")
-    .hour(hours)
-    .minute(minutes);
+  const _now = datetime(new Date(), { timezone });
+  const _startDate = datetime(
+    {
+      year: _now.year,
+      month: _now.month,
+      day: _now.day,
+      hour: hours,
+      minute: minutes,
+    },
+    { timezone },
+  );
 
-  if (startDate <= now) {
-    switch (frequency.type) {
-      case "daily":
-        startDate = startDate.date(now.date() + 1);
-        break;
-      case "weekly": {
-        const sortedDays = frequency
-          .on_days!.map(
-            (day) => (jsDaysOfWeek.indexOf(day) - now.day() + 7) % 7,
-          )
-          .sort((a, b) => a - b);
-        const daysUntilNextOccurrence = sortedDays[0];
-        startDate = startDate.date(now.date() + daysUntilNextOccurrence);
-        break;
+  const now = _now.toJSDate();
+  const startDate = _startDate.toJSDate();
+
+  switch (frequency.type) {
+    case "daily": {
+      if (startDate <= now) {
+        startDate.setDate(now.getDate() + 1);
       }
-      case "monthly": {
-        const sortedDays = frequency
-          .on_days!.map(
-            (day) => (jsDaysOfWeek.indexOf(day) - now.day() + 7) % 7,
-          )
-          .sort((a, b) => a - b);
-        const daysUntilNextOccurrence = sortedDays[0];
-        startDate = startDate.date(
-          now.date() +
-            daysUntilNextOccurrence +
-            (daysUntilNextOccurrence <= 0 ? 30 : 0),
-        );
-        break;
-      }
-      default:
-        throw new RangeError(
-          'Frequency must be "daily", "weekly", or "monthly".',
-        );
+
+      break;
     }
+    case "weekly":
+    case "monthly": {
+      const daysUntilNextOccurrence = getDaysUntilNextOccurrence(
+        frequency.on_days!,
+        now.getDay(),
+        startDate > now,
+      );
+      startDate.setDate(now.getDate() + daysUntilNextOccurrence);
+
+      break;
+    }
+    default:
+      throw new RangeError(
+        'Frequency must be "daily", "weekly", or "monthly".',
+      );
   }
 
   return startDate.toISOString();

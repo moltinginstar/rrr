@@ -1,22 +1,26 @@
-import dayjs from "dayjs";
-
+import { datetime } from "ptera/mod.ts";
 import type { Time } from "../types/index.ts";
 
 export const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-// TODO: dayjs not working in production
 export const formatTime = (time: Time, timezone: string) => {
   const [hours, minutes] = time.split(":").map(Number);
 
-  const date = dayjs
-    .tz(new Date(), timezone)
-    .startOf("d")
-    .hour(hours)
-    .minute(minutes);
+  const now = datetime(new Date(), { timezone });
+  const date = datetime(
+    {
+      year: now.year,
+      month: now.month,
+      day: now.day,
+      hour: hours,
+      minute: minutes,
+    },
+    { timezone },
+  );
 
-  return date.format("LT z");
+  return date.format("h:mm a ZZZ");
 };
 
 export const timezoneToParts = (timezone: string) => {
-  return timezone.replace("_", " ").split("/", 2);
+  return timezone.replace(/_/g, " ").split("/", 2);
 };
