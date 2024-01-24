@@ -84,7 +84,14 @@ That said, you still need to be on a paid Slack plan to use this app. If you are
    slack trigger create --trigger-def triggers/<trigger_name>.ts
    ```
 
-And that’s it! You can now use the app in your workspace. For more information on installing apps, see [Slack’s quickstart guide][Slack next-gen platform dev guide] for developing on the next-generation platform.
+6. Once the triggers are installed, you need to set `sendReminderTriggerUrl` and `updateReminderTriggerUrl` in the respective function definition files to the URLs of the newly created triggers and redeploy the app:
+
+   ```sh
+   slack deploy
+   ```
+
+And that’s it! You can now use the app in your workspace. You may need to wait a bit before you see it or manually run `Create a rotation` from `More > Automations > Workflows`.
+For more information on installing apps, see [Slack’s quickstart guide][Slack next-gen platform dev guide] for developing on the next-generation platform.
 
 ## Usage
 
