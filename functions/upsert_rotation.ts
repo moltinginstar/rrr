@@ -53,7 +53,6 @@ const getDaysUntilNextOccurrence = (
 };
 
 // TODO: PDT starts on 2024-03-12 2:00 AM PST, but Ptera thinks it starts at 10:00 AM PST.
-// TODO: AM/PM are swapped for noon and midnight.
 export const computeStartTime = (
   time: Time,
   timezone: string,
