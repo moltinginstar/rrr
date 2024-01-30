@@ -9,9 +9,8 @@
 
   <p>A <strong>r</strong>ound <strong>r</strong>obin <strong>r</strong>otation app for pirates. A<strong>rrr</strong>gh!</p>
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
-
+  [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+  [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 </div>
 
 Built on Slack’s Deno-based next-generation app platform, this app allows you to create on-call rotations for your team. It’s useful for things like:
@@ -112,11 +111,9 @@ Refer to [Slack’s Help Center][Slack custom workflow pricing] for up-to-date p
 
 ## Roadmap
 
-The next-generation platform is still very much in development, and there are many features that are still missing.
+The next-generation platform is still very much in development, and there are many features that are still missing. I did not know this when I started building this app, but I did my best to work around these limitations.
 
-I did not know this when I started building this app, but I did my best to work around these limitations.
-
-It may be a while before the platform is ready for production use (especially given my low time commitment) but I will continue to update this app as the platform evolves. See the [open issues][Open issues] for a full list of planned features and known issues.
+With this in mind, it may be a while before the platform is ready for production use (especially given my low time commitment) but I will continue to update this app as the platform evolves. See the [open issues][Open issues] for a full list of planned features and known issues.
 
 ## Contributing
 
